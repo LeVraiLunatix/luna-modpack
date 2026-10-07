@@ -1,56 +1,56 @@
-À perte de vue !
-Voxy voit tout !
-Plus de FPS que d'étoiles !
-Clair de lune garanti !
-La face cachée de la lune !
-Optimisé jusqu'au bout des chunks !
-Fabriqué sous la lune !
-100 % nocturne !
-Horizon infini !
-Sodium, Lithium, Lunium !
-Même les creepers dorment !
-Les LOD sont nos amis !
-Nuit blanche, FPS noirs… non, l'inverse !
-Écrit en pixels de lune !
-Vu d'ici, la Terre est carrée !
-Bonne nuit, Herobrine !
-Prégénère avant de rêver !
-/voxy import world !
-Lunaire mais pas lunatique !
-Mode nuit activé !
-Brille comme un minerai de diamant !
-Plus loin que l'Ender !
-Ne regarde pas la lune trop longtemps !
-Rendu à 2 km, sans transpirer !
-Moins de lag, plus de lune !
-Garanti sans OptiFine !
-Fabric, évidemment !
-Croissant ou pleine lune ?
-Le ciel n'est qu'un début !
-Une lune par chunk !
-Le jour se lève… ou pas !
-Les étoiles comptent tes FPS !
-Une marée de performances !
-Ça tourne même sur la lune !
-Nuit étoilée, tick parfait !
-Mieux qu'un télescope !
-Phases de lune : 8, phases de lag : 0 !
-Chuuut, les chunks dorment !
-Gravité réduite, FPS augmentés !
-Le minuit des performances !
-Pixel par pixel, jusqu'à l'horizon !
-Fait avec amour et C2ME !
-Promis, c'est pas un fond d'écran !
-Le monde entier en un regard !
-Ramène-moi une pierre de lune !
-Il fait nuit, mais on y voit clair !
-Lithium : 3, Lag : 0 !
-Ton GPU te remercie !
-Zoome avec C !
-Voyage au bout de la nuit !
-La lune n'a jamais aussi bien tourné !
-Gardien des LOD !
-Silence, ça génère !
-Un pas pour l'homme, un chunk pour Voxy !
-Mon horizon s'appelle Voxy !
-Plus brillant qu'un projecteur de balise !
+Look how far you can see!
+Voxy sees everything!
+More FPS than stars!
+Moonlight included!
+Now with 100% more horizon!
+Best played at night!
+Go touch the moon!
+Render distance: yes!
+Chunks? We have plenty!
+Made under a full moon!
+The mountains are real, I promise!
+Your GPU says thanks!
+Lag is a myth here!
+Pregen before you dream!
+Try /voxy import world!
+Somewhere out there, a creeper is sleeping!
+The far lands send their regards!
+Smoother than a fresh ice road!
+Press C to zoom!
+Press M for the map!
+The moon is made of glowstone!
+Bring snacks, it's a long view!
+One small step for Steve!
+Night mode: always on!
+Built by a human, tested by a cat!
+Have you looked up lately?
+Lithium, Sodium, Lunium!
+Ninety FPS before breakfast!
+Don't stare at the moon too long!
+Fresh animations, finally fixed!
+Hear that? That's a cave!
+Sounds better with headphones!
+Your inventory is sorted now!
+Graves keep your stuff safe!
+Day one, again!
+Coordinates? Top left!
+Sleep is for the phantoms!
+Brighter than a beacon!
+From here to the world border!
+Somebody turn the stars down!
+Ninety-six chunks and counting!
+Wake up, the sun is rising!
+Pixel by pixel, all the way out!
+Clouds got an upgrade!
+Leaves fall, frames don't!
+Footsteps that actually sound like footsteps!
+Hello from the other side of the map!
+It runs on a potato!
+Now playing: your adventure!
+Big world, tiny lag!
+Still loading? Nope!
+The view is the reward!
+Every sunset is a screenshot!
+Lunar approved!
+Built for explorers!
+Ready when you are!

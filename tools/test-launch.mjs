@@ -7,6 +7,7 @@
 import { execFileSync, spawn } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { gunzipSync, gzipSync } from "node:zlib";
 import { readZip } from "../lib/zip.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -19,6 +20,8 @@ const JAVA = process.env.JAVA ?? "java";
 const WORLD = "LunaTest";
 const keep = process.argv.includes("--keep");
 const menu = process.argv.includes("--menu");
+// --panorama : active la capture panoramique native (Ctrl+F2 en jeu) et laisse le jeu ouvert.
+const panorama = process.argv.includes("--panorama");
 const UA = { headers: { "User-Agent": "LeVraiLunatix/luna-modpack (test launcher)" } };
 
 async function fetchJson(url) {
@@ -93,8 +96,14 @@ const index = JSON.parse(mrpack.get("modrinth.index.json")().toString("utf8"));
 rmSync(join(INSTANCE, "mods"), { recursive: true, force: true });
 for (const file of index.files) {
   if (file.env?.client === "unsupported") continue;
-  const cached = join(ROOT, ".cache", `${file.hashes.sha1}.jar`);
-  if (existsSync(cached)) cpSync(cached, join(INSTANCE, file.path));
+  // La capture panoramique rend 6 images dans la même frame, ce que la minimap Xaero ne supporte pas.
+  if (panorama && /xaero/i.test(file.path)) continue;
+  const cached = join(ROOT, ".cache", `${file.hashes.sha1}${file.path.slice(file.path.lastIndexOf("."))}`);
+  // writeFileSync plutôt que cpSync : cpSync échoue à écraser un fichier dont le nom contient « § ».
+  if (existsSync(cached)) {
+    mkdirSync(dirname(join(INSTANCE, file.path)), { recursive: true });
+    writeFileSync(join(INSTANCE, file.path), readFileSync(cached));
+  }
   else await download(file.downloads[0], join(INSTANCE, file.path));
 }
 for (const [name, read] of mrpack)
@@ -123,17 +132,34 @@ if (!existsSync(join(INSTANCE, "saves", WORLD))) {
   cpSync(join(SERVER, WORLD), join(INSTANCE, "saves", WORLD), { recursive: true });
 }
 
+// Le monde vient du serveur vanilla, donc sans triches : on active les commandes dans level.dat
+// (tag octet « allowCommands », modifié en place).
+const levelDat = join(INSTANCE, "saves", WORLD, "level.dat");
+if (existsSync(levelDat)) {
+  const raw = gunzipSync(readFileSync(levelDat));
+  const key = Buffer.concat([Buffer.from([1, 0, 13]), Buffer.from("allowCommands")]);
+  const at = raw.indexOf(key);
+  if (at >= 0 && raw[at + key.length] !== 1) {
+    raw[at + key.length] = 1;
+    writeFileSync(levelDat, gzipSync(raw));
+  }
+}
+
 // ---------- Lancement ----------
 
 rmSync(join(INSTANCE, "crash-reports"), { recursive: true, force: true });
 // Sans ça, le premier lancement s'arrête sur l'écran d'accessibilité au lieu d'ouvrir le monde.
 // Le jeu réécrit options.txt à chaque fermeture : on force nos réglages à chaque lancement.
 const optionsFile = join(INSTANCE, "options.txt");
-const forced = { onboardAccessibility: "false", lang: "fr_fr" };
-const options = (existsSync(optionsFile) ? readFileSync(optionsFile, "utf8") : "").split(/\r?\n/).filter((l) => l && !(l.split(":")[0] in forced));
+const forced = { onboardAccessibility: "false", lang: "en_us" };
+// Premier lancement : on part des réglages LUNA livrés pour Default Options, comme chez un joueur.
+const defaults = join(INSTANCE, "config", "defaultoptions", "options.txt");
+const base = existsSync(optionsFile) ? readFileSync(optionsFile, "utf8") : existsSync(defaults) ? readFileSync(defaults, "utf8") : "";
+const options = base.split(/\r?\n/).filter((l) => l && !(l.split(":")[0] in forced));
 writeFileSync(optionsFile, [...options, ...Object.entries(forced).map(([k, v]) => `${k}:${v}`)].join("\n") + "\n");
 const args = [
   "-Xms2G", "-Xmx6G",
+  ...(panorama ? ["-DMC_DEBUG_ENABLED=true", "-DMC_DEBUG_PANORAMA_SCREENSHOT=true"] : []),
   "-cp", classpath.join(";"),
   fabric.mainClass,
   "--username", "LunaTest", "--uuid", "00000000000000000000000000000001",
@@ -162,11 +188,14 @@ const result = await new Promise((resolve) => {
 });
 
 if (result.ok && menu) {
-  await new Promise((r) => setTimeout(r, 6_000));
+  await new Promise((r) => setTimeout(r, 30_000));
   mkdirSync(join(TEST, "screens"), { recursive: true });
   const shot = join(TEST, "screens", "title.png");
   execFileSync("powershell", ["-NoProfile", "-File", join(ROOT, "tools", "capture-window.ps1"), "-ProcessId", String(game.pid), "-Out", shot]);
   console.log(`Écran titre capturé : ${shot}`);
+} else if (result.ok && panorama) {
+  console.log("Monde chargé : place-toi, puis Ctrl+F2 (captures dans .test/instance/screenshots). Ferme le jeu pour finir.");
+  await new Promise((r) => game.on("exit", r));
 } else if (result.ok) {
   console.log("Monde chargé, le jeu tourne 45 s pour laisser Voxy et les mods travailler…");
   await new Promise((r) => setTimeout(r, 45_000));

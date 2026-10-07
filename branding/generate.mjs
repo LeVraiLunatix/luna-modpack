@@ -2,9 +2,9 @@
 //   - luna-ui/assets/... : textures d'interface qui remplacent celles de Minecraft (embarquées dans le mod LUNA UI)
 //   - branding/out/      : icône Modrinth et aperçus
 //   node branding/generate.mjs
-import { mkdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { Canvas } from "../lib/png.mjs";
+import { Canvas, decodePng } from "../lib/png.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const MC = join(ROOT, "luna-ui", "assets", "minecraft");
@@ -93,32 +93,39 @@ const BIG = {
   A: [".####.", "######", "##..##", "######", "######", "##..##", "##..##"],
 };
 
-const SMALL = {
-  A: [".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
-  C: [".####", "#....", "#....", "#....", "#....", "#....", ".####"],
-  D: ["####.", "#...#", "#...#", "#...#", "#...#", "#...#", "####."],
-  E: ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
-  I: ["###", ".#.", ".#.", ".#.", ".#.", ".#.", "###"],
-  L: ["#....", "#....", "#....", "#....", "#....", "#....", "#####"],
-  N: ["#...#", "##..#", "#.#.#", "#..##", "#...#", "#...#", "#...#"],
-  O: [".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
-  R: ["####.", "#...#", "#...#", "####.", "#.#..", "#..#.", "#...#"],
-  T: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
-  U: ["#...#", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
-  " ": ["...", "...", "...", "...", "...", "...", "..."],
+// Petite police « manuscrite » : minuscules sur 9 lignes (ligne de base = 6, jambages en 7-8).
+// Chaque glyphe : [ligne de départ, ...rangées].
+const SCRIPT = {
+  B: [0, "####.", "#...#", "#...#", "####.", "#...#", "#...#", "####."],
+  b: [0, "#....", "#....", "####.", "#...#", "#...#", "#...#", "####."],
+  d: [0, "....#", "....#", ".####", "#...#", "#...#", "#...#", ".####"],
+  e: [2, ".###.", "#...#", "#####", "#....", ".###."],
+  h: [0, "#....", "#....", "####.", "#...#", "#...#", "#...#", "#...#"],
+  i: [0, "#", ".", "#", "#", "#", "#", "#"],
+  n: [2, "####.", "#...#", "#...#", "#...#", "#...#"],
+  o: [2, ".###.", "#...#", "#...#", "#...#", ".###."],
+  r: [2, "#.##", "##..", "#...", "#...", "#..."],
+  t: [0, ".#..", ".#..", "####", ".#..", ".#..", ".#..", "..##"],
+  y: [2, "#...#", "#...#", "#...#", ".####", "....#", "#...#", ".###."],
+  z: [2, "#####", "...#.", "..#..", ".#...", "#####"],
+  " ": [0, "..."],
 };
-SMALL["É"] = SMALL.E;
 
-function smallTextMask(text) {
+// Texte penché vers la droite (une colonne tous les 3 pixels de haut) pour un rendu plus « écrit à la main ».
+function scriptTextMask(text) {
   const cells = [];
   let x = 0;
   for (const ch of text) {
-    const g = SMALL[ch];
-    g.forEach((row, y) => [...row].forEach((c, i) => c === "#" && cells.push([x + i, y + 2])));
-    if (ch === "É") cells.push([x + 2, 0], [x + 3, 0], [x + 2, 1]);
-    x += g[0].length + 1;
+    const [start, ...rows] = SCRIPT[ch];
+    rows.forEach((row, ry) =>
+      [...row].forEach((c, i) => {
+        const y = start + ry;
+        if (c === "#") cells.push([x + i + Math.floor((8 - y) / 3), y]);
+      }),
+    );
+    x += rows[0].length + 1;
   }
-  return { cells, width: x - 1, height: 9 };
+  return { cells, width: x + 2, height: 9 };
 }
 
 // ---------- Logo (texture 1024×256, dessinée sur une grille 256×64 puis ×4) ----------
@@ -214,12 +221,13 @@ function makeLogo() {
   return c;
 }
 
-function makeEdition(text) {
+function makeSubtitle(text) {
   const c = new Canvas(128, 16);
-  const { cells, width } = smallTextMask(text);
+  const { cells, width } = scriptTextMask(text);
   const x0 = Math.round((128 - width) / 2), y0 = 3;
-  for (const [x, y] of cells) c.set(x0 + x + 1, y0 + y + 1, [24, 18, 60, 1]);
-  for (const [x, y] of cells) c.set(x0 + x, y0 + y, mix([226, 220, 255, 1], [170, 150, 255, 1], y / 9));
+  for (const [x, y] of cells) c.set(x0 + x + 1, y0 + y + 1, [20, 14, 52, 1]);
+  for (const [x, y] of cells) c.set(x0 + x, y0 + y, mix([246, 240, 255, 1], [196, 178, 255, 1], y / 8));
+  sparkle(c, x0 + width + 3, y0 + 1, 1, [255, 236, 200, 1]);
   return c;
 }
 
@@ -568,71 +576,71 @@ function makeIcon() {
 
 // ---------- Splashs ----------
 
-const SPLASHES = `À perte de vue !
-Voxy voit tout !
-Plus de FPS que d'étoiles !
-Clair de lune garanti !
-La face cachée de la lune !
-Optimisé jusqu'au bout des chunks !
-Fabriqué sous la lune !
-100 % nocturne !
-Horizon infini !
-Sodium, Lithium, Lunium !
-Même les creepers dorment !
-Les LOD sont nos amis !
-Nuit blanche, FPS noirs… non, l'inverse !
-Écrit en pixels de lune !
-Vu d'ici, la Terre est carrée !
-Bonne nuit, Herobrine !
-Prégénère avant de rêver !
-/voxy import world !
-Lunaire mais pas lunatique !
-Mode nuit activé !
-Brille comme un minerai de diamant !
-Plus loin que l'Ender !
-Ne regarde pas la lune trop longtemps !
-Rendu à 2 km, sans transpirer !
-Moins de lag, plus de lune !
-Garanti sans OptiFine !
-Fabric, évidemment !
-Croissant ou pleine lune ?
-Le ciel n'est qu'un début !
-Une lune par chunk !
-Le jour se lève… ou pas !
-Les étoiles comptent tes FPS !
-Une marée de performances !
-Ça tourne même sur la lune !
-Nuit étoilée, tick parfait !
-Mieux qu'un télescope !
-Phases de lune : 8, phases de lag : 0 !
-Chuuut, les chunks dorment !
-Gravité réduite, FPS augmentés !
-Le minuit des performances !
-Pixel par pixel, jusqu'à l'horizon !
-Fait avec amour et C2ME !
-Promis, c'est pas un fond d'écran !
-Le monde entier en un regard !
-Ramène-moi une pierre de lune !
-Il fait nuit, mais on y voit clair !
-Lithium : 3, Lag : 0 !
-Ton GPU te remercie !
-Zoome avec C !
-Voyage au bout de la nuit !
-La lune n'a jamais aussi bien tourné !
-Gardien des LOD !
-Silence, ça génère !
-Un pas pour l'homme, un chunk pour Voxy !
-Mon horizon s'appelle Voxy !
-Plus brillant qu'un projecteur de balise !
+const SPLASHES = `Look how far you can see!
+Voxy sees everything!
+More FPS than stars!
+Moonlight included!
+Now with 100% more horizon!
+Best played at night!
+Go touch the moon!
+Render distance: yes!
+Chunks? We have plenty!
+Made under a full moon!
+The mountains are real, I promise!
+Your GPU says thanks!
+Lag is a myth here!
+Pregen before you dream!
+Try /voxy import world!
+Somewhere out there, a creeper is sleeping!
+The far lands send their regards!
+Smoother than a fresh ice road!
+Press C to zoom!
+Press M for the map!
+The moon is made of glowstone!
+Bring snacks, it's a long view!
+One small step for Steve!
+Night mode: always on!
+Built by a human, tested by a cat!
+Have you looked up lately?
+Lithium, Sodium, Lunium!
+Ninety FPS before breakfast!
+Don't stare at the moon too long!
+Fresh animations, finally fixed!
+Hear that? That's a cave!
+Sounds better with headphones!
+Your inventory is sorted now!
+Graves keep your stuff safe!
+Day one, again!
+Coordinates? Top left!
+Sleep is for the phantoms!
+Brighter than a beacon!
+From here to the world border!
+Somebody turn the stars down!
+Ninety-six chunks and counting!
+Wake up, the sun is rising!
+Pixel by pixel, all the way out!
+Clouds got an upgrade!
+Leaves fall, frames don't!
+Footsteps that actually sound like footsteps!
+Hello from the other side of the map!
+It runs on a potato!
+Now playing: your adventure!
+Big world, tiny lag!
+Still loading? Nope!
+The view is the reward!
+Every sunset is a screenshot!
+Lunar approved!
+Built for explorers!
+Ready when you are!
 `;
 
 // ---------- Génération ----------
 
-console.log("Logo et édition…");
+console.log("Logo et sous-titre…");
 const logo = makeLogo();
 save(join(MC, "textures", "gui", "title", "minecraft.png"), logo.upscale(4));
 save(join(MC, "textures", "gui", "title", "minceraft.png"), logo.upscale(4));
-save(join(MC, "textures", "gui", "title", "edition.png"), makeEdition("ÉDITION NOCTURNE").upscale(4));
+save(join(MC, "textures", "gui", "title", "edition.png"), makeSubtitle("Beyond the horizon").upscale(4));
 save(join(OUT, "logo.png"), logo.upscale(4));
 
 console.log("Widgets et fonds de menus…");
@@ -647,9 +655,22 @@ save(join(ROOT, "luna-ui", "assets", "luna_ui", "icon.png"), icon);
 console.log("Splashs…");
 saveText(join(MC, "texts", "splashes.txt"), SPLASHES);
 
-console.log("Panorama (6 × 1024², quelques secondes)…");
-const faces = makePanorama(1024);
-faces.forEach((f, i) => save(join(MC, "textures", "gui", "title", "background", `panorama_${i}.png`), f));
+// Panorama : de préférence le vrai panorama 3D capturé en jeu (branding/panorama/, voir README),
+// sinon le décor procédural.
+const PANO = join(ROOT, "branding", "panorama");
+const panoOut = (i) => join(MC, "textures", "gui", "title", "background", `panorama_${i}.png`);
+let faces;
+if ([0, 1, 2, 3, 4, 5].every((i) => existsSync(join(PANO, `panorama_${i}.png`)))) {
+  console.log("Panorama 3D capturé en jeu…");
+  faces = [0, 1, 2, 3, 4, 5].map((i) => {
+    copyFileSync(join(PANO, `panorama_${i}.png`), panoOut(i));
+    return decodePng(readFileSync(join(PANO, `panorama_${i}.png`)));
+  });
+} else {
+  console.log("Panorama procédural (6 × 1024², quelques secondes)…");
+  faces = makePanorama(1024);
+  faces.forEach((f, i) => save(panoOut(i), f));
+}
 
 // Aperçu des boutons pour vérification visuelle
 const preview = new Canvas(220, 110, [20, 18, 46, 1]);

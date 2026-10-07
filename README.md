@@ -1,67 +1,90 @@
 # LUNA
 
-Modpack Fabric pour **Minecraft 26.2** : un maximum d'optimisations et un horizon à perte de vue grâce à **Voxy**.
+Modpack Fabric pour **Minecraft 26.2** : un maximum d'optimisations, un horizon à perte de vue grâce à **Voxy**,
+de l'ambiance (sons, particules, nuages, lumières dynamiques), une sélection de packs de ressources et un thème
+**LUNA** sur tous les menus.
 
-Tout le jeu porte le thème **LUNA** : logo en roche lunaire, panorama nocturne (lune, Voie lactée, aurore,
-lac miroir et montagnes en blocs façon LOD), boutons, curseurs, onglets, cases à cocher et fonds de menus
-« verre de nuit », et des splashs en français. Le thème est un petit mod maison (**LUNA UI**, uniquement des
-textures, aucun code : zéro impact sur les FPS), donc il est actif d'office sans toucher aux resource packs.
+![Écran titre](branding/out/screenshot-title.png)
 
-![Logo](branding/out/logo.png)
+Le contenu exact (mods, packs, shaders, versions) est dans [MODS.md](MODS.md), régénéré à chaque build.
 
-La liste complète des mods, avec leur version et leur rôle, est dans [MODS.md](MODS.md) (générée à chaque build).
+## Ce qu'il y a dedans
+
+- **Optimisations** : Sodium, Lithium, C2ME, ScalableLux, FerriteCore, ModernFix, Nvidium, ImmediatelyFast,
+  Entity Culling, MoreCulling, Better Block Entities, VMP, Ixeris, Gnetum, Particle Core… et Voxy pour le lointain.
+- **Cartes et infos** : minimap et carte du monde Xaero (+ XaeroPlus), Jade, AppleSkin, compteur de jours
+  au-dessus de la barre d'objets (les coordonnées sont sous la minimap).
+- **Inventaire** : ClientSort (tri au clic molette) et Mouse Tweaks.
+- **Ambiance** : Sound Physics Remastered, AmbientSounds, Presence Footsteps, Falling Leaves, Particle Rain,
+  Wakes, Better Clouds, Subtle Effects, LambDynamicLights, 3D Skin Layers.
+- **Packs de ressources** : Fresh Animations (+ extensions), Fresh Food, Better Leaves, Default Dark Mode,
+  Fullbright UB… activés au premier lancement. Les moteurs qu'ils exigent sont inclus : EMF + ETF
+  (Fresh Animations), Continuity (contours de NewGlowingOres), Respackopts.
+- **Shaders** (désactivés par défaut) : Complementary Reimagined et Unbound, BSL, Bliss, MakeUp Ultra Fast.
+- **Graves** : une tombe garde tes objets quand tu meurs (le mod active `keep_inventory` pour fonctionner).
+- **Sona pour Minecraft** : le lecteur Sona en jeu (mod maison, sources dans `D:\Code\sona-minecraft`).
+- **Thème LUNA** : logo, sous-titre « Beyond the horizon », splashs en anglais, panorama 3D réel capturé en jeu,
+  boutons, curseurs, onglets et fonds de menus.
 
 ## Installer
 
 1. Récupère `dist/LUNA-<version>.mrpack`.
 2. Dans l'app Modrinth : **+ (Créer une instance) → Importer depuis un fichier** et choisis le `.mrpack`.
-   Prism Launcher, ATLauncher et MultiMC l'importent aussi.
-3. Donne au moins **6 Go de RAM** à l'instance (Voxy et C2ME en profitent).
+   Prism Launcher l'importe aussi.
+3. Donne au moins **6 Go de RAM** à l'instance.
 
-Voxy demande une carte graphique compatible **OpenGL 4.6** (toute carte NVIDIA/AMD récente, Intel Arc).
+Au **premier lancement** d'une instance neuve, Default Options applique les réglages LUNA (packs de ressources
+activés dans le bon ordre, distance de rendu 12, écran de chargement sombre). Ensuite tes réglages ne sont plus
+jamais écrasés. Sur une instance qui existait déjà, active les packs à la main dans Options › Resource Packs.
+
+Le thème LUNA existe en mod (toujours actif) et en pack « LUNA UI » placé en haut de la liste : il passe ainsi
+devant les packs d'interface comme Default Dark Mode, qui restent appliqués partout ailleurs (inventaires…).
 
 ## Bien utiliser Voxy
 
-Voxy ne « voit » que le terrain déjà chargé : il convertit chaque chunk que tu explores en LOD.
-Pour avoir tout l'horizon dès le départ dans un monde solo :
+Voxy ne « voit » que le terrain déjà chargé. Pour avoir tout l'horizon dès le départ dans un monde solo :
 
-1. Prégénère le monde avec Chunky : `/chunky radius 4000` puis `/chunky start`.
+1. Prégénère le monde avec Chunky : `/chunky radius 1500` puis `/chunky start`.
 2. Importe-le dans Voxy : `/voxy import world "<nom du monde>"`.
 
-Un monde existant s'importe de la même façon. Garde une **distance de rendu normale basse** (8 à 12 chunks) :
-c'est Voxy qui dessine le lointain, bien plus efficacement que le jeu.
-
-Les resource packs qui retexturent l'interface (Default Dark Mode, packs « GUI »…) passent par-dessus le thème
-LUNA : désactive-les pour retrouver les menus LUNA.
-
-Côté shaders, Iris est inclus mais seuls les packs qui supportent explicitement Voxy affichent les LOD.
+Garde une distance de rendu normale basse (8 à 12 chunks) : c'est Voxy qui dessine le lointain. Côté shaders,
+seuls ceux qui supportent explicitement Voxy affichent les LOD.
 
 ## Identité visuelle
-
-Tout est généré par code, sans image externe :
 
 ```bash
 node branding/generate.mjs
 ```
 
-Le script dessine le logo, l'édition, le panorama (6 faces 1024²), les sprites d'interface et l'icône, puis les
-écrit dans `luna-ui/assets/` (textures embarquées dans le mod LUNA UI) et `branding/out/` (icône Modrinth 512×512,
-aperçus du panorama déplié et des boutons). Les couleurs, les splashs et le décor se règlent en tête de fichier.
+Dessine le logo, le sous-titre, les sprites d'interface, les fonds, l'icône Modrinth et écrit les splashs, dans
+`luna-ui/assets/` et `branding/out/`. Le panorama vient de `branding/panorama/` (capture réelle) ; si ce dossier
+est vide, un panorama procédural est dessiné à la place.
+
+### Recapturer le panorama 3D
+
+Minecraft 26.2 sait capturer un vrai panorama (6 faces) quand on le lance avec les propriétés de debug
+`MC_DEBUG_ENABLED` et `MC_DEBUG_PANORAMA_SCREENSHOT` :
+
+```bash
+node tools/test-launch.mjs --panorama
+```
+
+En jeu : place-toi (le regard donne la face d'ouverture de l'écran titre), cache l'interface avec F1, puis
+**Ctrl+F2**. Les faces arrivent dans `.test/instance/screenshots/` : copie-les dans `branding/panorama/` et relance
+le générateur. Xaero est retiré pendant cette séance (sa minimap plante pendant la capture).
+[tools/game-input.ps1](tools/game-input.ps1) permet d'envoyer des commandes au jeu depuis PowerShell
+(utiliser des coordonnées absolues : `~` est une touche morte en AZERTY).
 
 ## Construire le pack
-
-Il faut juste Node.js 22 ou plus récent.
 
 ```bash
 node build.mjs
 ```
 
-Le script résout chaque mod de [pack.config.json](pack.config.json) sur Modrinth pour la version de Minecraft visée
-(release en priorité), ajoute les dépendances requises, télécharge les jars pour vérifier leurs hashs,
-contrôle les `depends`/`breaks` de chaque `fabric.mod.json` (jars embarqués compris), construit le mod LUNA UI depuis `luna-ui/`, puis écrit
-`dist/LUNA-<version>.mrpack` et `MODS.md`. Ajouter un mod = ajouter une ligne dans `pack.config.json`.
-
-Le dossier `overrides/` (s'il existe) est copié tel quel dans l'instance (configs, resource packs…).
+Le script résout chaque mod, pack et shader de [pack.config.json](pack.config.json) sur Modrinth (version épinglée
+ou la plus récente pour la version de Minecraft visée), ajoute les dépendances, vérifie les hashs, contrôle les
+`depends`/`breaks` de chaque `fabric.mod.json` (jars embarqués et mods maison compris), construit le mod et le pack
+LUNA UI, écrit les réglages Default Options, puis produit `dist/LUNA-<version>.mrpack` et `MODS.md`.
 
 ### Tester pour de vrai
 
@@ -69,11 +92,12 @@ Le dossier `overrides/` (s'il existe) est copié tel quel dans l'instance (confi
 node tools/test-launch.mjs
 ```
 
-Installe le pack dans une instance jetable (`.test/`), génère un monde avec le serveur vanilla, lance le jeu
-en solo (compte hors ligne) et vérifie qu'il charge le monde sans crash. `--keep` laisse le jeu ouvert.
-Si le jeu reste sur un menu (écran de premier lancement), ouvre le monde `LunaTest` à la main.
+Installe le pack dans une instance jetable (`.test/`), génère un monde avec le serveur vanilla (triches activées),
+lance le jeu en solo (compte hors ligne), vérifie qu'il charge le monde sans crash et capture l'écran.
+`--menu` s'arrête sur l'écran titre et le capture dans `.test/screens/`.
 
 ## Publier sur Modrinth
 
-Crée un projet de type **Modpack** sur modrinth.com, puis **Versions → Create a version** et dépose le `.mrpack`
-(loader Fabric, version 26.2) et mets `branding/out/icon.png` en icône du projet. Pense à créditer et lier Voxy sur la page du projet, comme son auteur le demande.
+Crée un projet de type **Modpack**, puis **Versions → Create a version** et dépose le `.mrpack` (loader Fabric,
+version 26.2), avec `branding/out/icon.png` en icône. Pense à créditer et lier Voxy sur la page du projet, comme
+son auteur le demande. Sona et LUNA UI sont des mods maison livrés dans le pack (overrides).

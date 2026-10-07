@@ -5,7 +5,7 @@
 // et contrôle les "depends"/"breaks" de chaque fabric.mod.json avant d'emballer.
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { basename, join, relative, sep } from "node:path";
 import { readZip, writeZip } from "./lib/zip.mjs";
 
 const ROOT = import.meta.dirname;
@@ -15,6 +15,7 @@ const DIST = join(ROOT, "dist");
 const API = "https://api.modrinth.com/v2";
 const UA = { headers: { "User-Agent": "LeVraiLunatix/luna-modpack (build script)" } };
 const JAVA_VERSION = "25";
+const PACK_FORMAT = 88; // format des packs de ressources de Minecraft 26.2
 
 async function api(path) {
   for (let attempt = 0; ; attempt++) {
@@ -184,10 +185,11 @@ function scanJar(buf, owner, depth = 0) {
   }
 }
 
-const files = [];
-for (const { project, version } of chosen) {
+// Télécharge (ou relit depuis le cache) le fichier principal d'une version et vérifie ses hashs.
+async function fetchVerified(version) {
   const file = version.files.find((f) => f.primary) ?? version.files[0];
-  const cached = join(CACHE, `${file.hashes.sha1}.jar`);
+  const ext = file.filename.slice(file.filename.lastIndexOf("."));
+  const cached = join(CACHE, `${file.hashes.sha1}${ext}`);
   let buf;
   if (existsSync(cached)) buf = readFileSync(cached);
   else {
@@ -199,6 +201,12 @@ for (const { project, version } of chosen) {
   const sha512 = createHash("sha512").update(buf).digest("hex");
   if (sha1 !== file.hashes.sha1 || sha512 !== file.hashes.sha512) throw new Error(`hash invalide pour ${file.filename}`);
   if (!existsSync(cached)) writeFileSync(cached, buf);
+  return { file, buf, sha1, sha512 };
+}
+
+const files = [];
+for (const { project, version } of chosen) {
+  const { file, buf, sha1, sha512 } = await fetchVerified(version);
   scanJar(buf, project.slug);
 
   const server = project.server_side === "unsupported" ? "unsupported" : project.server_side === "required" ? "required" : "optional";
@@ -225,6 +233,44 @@ const uiJar = writeZip(
   }),
 );
 scanJar(uiJar, "luna-ui");
+
+// Mods maison hors Modrinth (ex. Sona), livrés tels quels dans overrides/mods.
+const localMods = (config.localMods ?? []).map((m) => {
+  const path = join(ROOT, m.path);
+  if (!existsSync(path)) throw new Error(`mod local introuvable : ${m.path}`);
+  const buf = readFileSync(path);
+  scanJar(buf, m.name);
+  return { ...m, filename: basename(path), buf };
+});
+
+// Packs de ressources (version épinglée ou la plus récente pour la version de MC) et shaders.
+async function resolveAsset(entry, loaders) {
+  const project = await api(`/project/${entry.slug}`);
+  let version;
+  if (entry.version) version = await api(`/version/${entry.version}`);
+  else {
+    const q = `loaders=${encodeURIComponent(JSON.stringify(loaders))}&game_versions=${encodeURIComponent(JSON.stringify([config.minecraft]))}`;
+    const list = await api(`/project/${project.id}/version?${q}`);
+    list.sort((a, b) => TYPE_RANK[a.version_type] - TYPE_RANK[b.version_type] || b.date_published.localeCompare(a.date_published));
+    version = list[0];
+    if (!version) throw new Error(`${entry.slug} : aucune version pour ${config.minecraft}`);
+  }
+  const { file, buf, sha1, sha512 } = await fetchVerified(version);
+  return { entry, project, version, file, buf, sha1, sha512 };
+}
+const resourcepacks = [];
+for (const entry of config.resourcepacks ?? []) resourcepacks.push(await resolveAsset(entry, ["minecraft"]));
+const shaders = [];
+for (const entry of config.shaders ?? []) shaders.push(await resolveAsset(entry, ["iris"]));
+for (const [list, dir] of [[resourcepacks, "resourcepacks"], [shaders, "shaderpacks"]])
+  for (const { file, buf, sha1, sha512 } of list)
+    files.push({
+      path: `${dir}/${file.filename}`,
+      hashes: { sha1, sha512 },
+      env: { client: "required", server: "unsupported" },
+      downloads: [file.url],
+      fileSize: buf.length,
+    });
 
 provided.set("minecraft", config.minecraft);
 provided.set("fabricloader", config.fabricLoader);
@@ -270,6 +316,26 @@ const index = {
 
 const zipFiles = [{ name: "modrinth.index.json", data: Buffer.from(JSON.stringify(index, null, 2)) }];
 zipFiles.push({ name: `overrides/mods/${uiJarName}`, data: uiJar });
+for (const m of localMods) zipFiles.push({ name: `overrides/mods/${m.filename}`, data: m.buf });
+
+// Le thème existe aussi en pack de ressources placé tout en haut de la liste : ainsi il passe
+// devant les packs d'interface (Default Dark Mode…) là où ils se chevauchent.
+const UI_PACK = "LUNA UI.zip";
+const uiPack = writeZip([
+  { name: "pack.mcmeta", data: Buffer.from(JSON.stringify({ pack: { min_format: [PACK_FORMAT], max_format: [PACK_FORMAT], description: `§dLUNA §7${config.version} — theme` } }, null, 2)) },
+  { name: "pack.png", data: readFileSync(join(UI, "assets", "luna_ui", "icon.png")) },
+  ...walk(join(UI, "assets")).map((f) => ({ name: relative(UI, f).split(sep).join("/"), data: readFileSync(f) })),
+]);
+zipFiles.push({ name: `overrides/resourcepacks/${UI_PACK}`, data: uiPack });
+
+// Réglages appliqués par Default Options au tout premier lancement seulement (jamais écrasés ensuite).
+if (config.defaultOptions) {
+  const enabled = ["vanilla", ...resourcepacks.filter((p) => p.entry.enabled !== false).map((p) => `file/${p.file.filename}`), `file/${UI_PACK}`];
+  const incompatible = resourcepacks.filter((p) => p.entry.incompatible).map((p) => `file/${p.file.filename}`);
+  const lines = Object.entries(config.defaultOptions).map(([k, v]) => `${k}:${v}`);
+  lines.push(`resourcePacks:${JSON.stringify(enabled)}`, `incompatibleResourcePacks:${JSON.stringify(incompatible)}`);
+  zipFiles.push({ name: "overrides/config/defaultoptions/options.txt", data: Buffer.from(lines.join("\n") + "\n") });
+}
 const overrides = join(ROOT, "overrides");
 if (existsSync(overrides))
   for (const f of walk(overrides)) zipFiles.push({ name: relative(ROOT, f).split(sep).join("/"), data: readFileSync(f) });
@@ -281,9 +347,19 @@ writeFileSync(out, writeZip(zipFiles));
 const table = chosen
   .map(({ project, version, mod }) => `| [${project.title}](https://modrinth.com/mod/${project.slug}) | ${version.version_number} | ${mod?.why ?? "Dépendance"} |`)
   .concat(`| LUNA UI (maison) | ${config.version} | Thème visuel : logo, panorama, boutons et menus |`)
+  .concat(localMods.map((m) => `| ${m.name} (maison) | ${m.filename} | ${m.why} |`))
   .join("\n");
+const assetTable = (list, kind) =>
+  list.map(({ project, version }) => `| [${project.title}](https://modrinth.com/${kind}/${project.slug}) | ${version.version_number} |`).join("\n");
+const modCount = chosen.length + 1 + localMods.length;
 writeFileSync(
   join(ROOT, "MODS.md"),
-  `# Mods de ${config.name} ${config.version}\n\nMinecraft ${config.minecraft} · Fabric Loader ${config.fabricLoader} · ${chosen.length + 1} mods\n\n| Mod | Version | Rôle |\n|---|---|---|\n${table}\n`,
+  [
+    `# Contenu de ${config.name} ${config.version}`,
+    `Minecraft ${config.minecraft} · Fabric Loader ${config.fabricLoader} · ${modCount} mods · ${resourcepacks.length} packs de ressources · ${shaders.length} shaders`,
+    `## Mods\n\n| Mod | Version | Rôle |\n|---|---|---|\n${table}`,
+    `## Packs de ressources\n\nActivés par défaut au premier lancement, dans cet ordre (du bas vers le haut), avec LUNA UI tout en haut.\n\n| Pack | Version |\n|---|---|\n${assetTable(resourcepacks, "resourcepack")}`,
+    `## Shaders\n\nDésactivés par défaut : Options › Video Settings › Shader Packs.\n\n| Shader | Version |\n|---|---|\n${assetTable(shaders, "shader")}`,
+  ].join("\n\n") + "\n",
 );
-console.log(`\n✔ ${relative(ROOT, out)} (${chosen.length} mods + LUNA UI)`);
+console.log(`\n✔ ${relative(ROOT, out)} (${modCount} mods, ${resourcepacks.length} packs, ${shaders.length} shaders)`);
