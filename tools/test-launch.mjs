@@ -2,7 +2,9 @@
 // installe le client vanilla + Fabric Loader, prégénère un monde avec le serveur vanilla,
 // puis ouvre ce monde en solo (compte hors ligne) et guette la connexion ou un crash.
 //   node tools/test-launch.mjs [--keep]   (--keep : laisse le jeu ouvert)
-import { spawn } from "node:child_process";
+//   node tools/test-launch.mjs --menu     (s'arrête sur l'écran titre et le capture dans .test/screens/ ;
+//                                          la fenêtre passe au premier plan le temps de la capture)
+import { execFileSync, spawn } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { readZip } from "../lib/zip.mjs";
@@ -16,6 +18,7 @@ const INSTANCE = join(TEST, "instance");
 const JAVA = process.env.JAVA ?? "java";
 const WORLD = "LunaTest";
 const keep = process.argv.includes("--keep");
+const menu = process.argv.includes("--menu");
 const UA = { headers: { "User-Agent": "LeVraiLunatix/luna-modpack (test launcher)" } };
 
 async function fetchJson(url) {
@@ -125,7 +128,8 @@ const args = [
   "--accessToken", "0", "--userType", "legacy",
   "--version", config.minecraft, "--versionType", "release",
   "--gameDir", INSTANCE, "--assetsDir", ASSETS, "--assetIndex", vanilla.assetIndex.id,
-  "--quickPlaySingleplayer", WORLD,
+  "--width", "1600", "--height", "900",
+  ...(menu ? [] : ["--quickPlaySingleplayer", WORLD]),
 ];
 console.log("Lancement du jeu…");
 const game = spawn(JAVA, args, { cwd: INSTANCE });
@@ -136,14 +140,22 @@ const result = await new Promise((resolve) => {
     const text = d.toString();
     log.push(text);
     process.stdout.write(text.split("\n").filter((l) => /ERROR|FATAL|Exception|joined the game|Loading Minecraft|mods/.test(l)).map((l) => `  │ ${l}\n`).join(""));
-    if (/LunaTest joined the game/.test(text)) { clearTimeout(timeout); resolve({ ok: true }); }
+    if (!menu && /LunaTest joined the game/.test(text)) { clearTimeout(timeout); resolve({ ok: true }); }
+    // L'écran titre interroge Realms dès qu'il s'affiche : c'est notre signal.
+    if (menu && /realms/i.test(text)) { clearTimeout(timeout); resolve({ ok: true }); }
   };
   game.stdout.on("data", onData);
   game.stderr.on("data", onData);
   game.on("exit", (code) => { clearTimeout(timeout); resolve({ ok: false, reason: `le jeu s'est fermé (code ${code})` }); });
 });
 
-if (result.ok) {
+if (result.ok && menu) {
+  await new Promise((r) => setTimeout(r, 6_000));
+  mkdirSync(join(TEST, "screens"), { recursive: true });
+  const shot = join(TEST, "screens", "title.png");
+  execFileSync("powershell", ["-NoProfile", "-File", join(ROOT, "tools", "capture-window.ps1"), "-ProcessId", String(game.pid), "-Out", shot]);
+  console.log(`Écran titre capturé : ${shot}`);
+} else if (result.ok) {
   console.log("Monde chargé, le jeu tourne 45 s pour laisser Voxy et les mods travailler…");
   await new Promise((r) => setTimeout(r, 45_000));
 }
@@ -151,7 +163,8 @@ const crashed = existsSync(join(INSTANCE, "crash-reports")) && readdirSync(join(
 if (!keep || !result.ok) game.kill();
 writeFileSync(join(TEST, "last-run.log"), log.join(""));
 
-if (result.ok && !crashed) console.log("\n✔ LUNA démarre et charge un monde sans crash (journal : .test/last-run.log)");
+if (result.ok && !crashed)
+  console.log(`\n✔ LUNA ${menu ? "atteint l'écran titre" : "démarre et charge un monde"} sans crash (journal : .test/last-run.log)`);
 else {
   console.error(`\n✖ Échec : ${crashed ? "rapport de crash dans .test/instance/crash-reports" : result.reason} (journal : .test/last-run.log)`);
   process.exit(1);

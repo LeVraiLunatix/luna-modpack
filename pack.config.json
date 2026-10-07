@@ -1,6 +1,6 @@
 {
   "name": "LUNA",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "summary": "Fabric ultra-optimisé + rendu lointain Voxy. FPS au plafond, horizon à perte de vue.",
   "minecraft": "26.2",
   "fabricLoader": "0.19.5",
@@ -28,6 +28,18 @@
     { "slug": "chunky", "why": "Prégénère le monde pour que Voxy affiche tout l'horizon" },
     { "slug": "zoomify", "why": "Zoom (pratique avec une vue aussi lointaine)" },
     { "slug": "iris", "why": "Shaders (seuls les packs compatibles Voxy rendent les LOD)" },
+    { "slug": "modernfix-mvus", "why": "Démarrage plus rapide, moins de RAM, dizaines de correctifs (ModernFix)" },
+    { "slug": "rrls", "why": "Recharge les ressources en arrière-plan sans bloquer le jeu" },
+    { "slug": "nvidium", "why": "Rendu ultra-rapide via mesh shaders sur cartes NVIDIA (s'éteint tout seul ailleurs)" },
+    { "slug": "better-block-entities", "why": "Coffres, panneaux, lits… rendus comme des blocs (gros gain FPS)" },
+    { "slug": "particle-core", "why": "Culling et rendu optimisé des particules" },
+    { "slug": "ksyxis", "why": "Chargement des mondes plus rapide" },
+    { "slug": "structure-layout-optimizer", "why": "Génération des structures (villages, donjons) accélérée" },
+    { "slug": "forcecloseworldloadingscreen", "why": "Ferme l'écran de chargement du monde dès que possible" },
+    { "slug": "rsls", "why": "Moteur de son optimisé, plus de sources sonores" },
+    { "slug": "packet-fixer", "why": "Corrige les déconnexions et limites réseau" },
+    { "slug": "fast-ip-ping", "why": "Liste des serveurs qui ping instantanément" },
+    { "slug": "cubes-without-borders", "why": "Plein écran fenêtré sans bordure (alt-tab instantané)" },
     { "slug": "modmenu", "why": "Liste et configuration des mods" }
   ]
 }

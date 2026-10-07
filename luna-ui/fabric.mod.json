@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "luna_ui",
+  "version": "${version}",
+  "name": "LUNA UI",
+  "description": "Thème visuel du modpack LUNA : logo, panorama nocturne, boutons et menus. Ressources uniquement, aucun code.",
+  "authors": ["Lunatix"],
+  "contact": { "sources": "https://github.com/LeVraiLunatix/luna-modpack" },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/luna_ui/icon.png",
+  "environment": "client",
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-resource-loader-v0": "*",
+    "minecraft": "${minecraft}"
+  }
+}

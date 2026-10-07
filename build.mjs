@@ -211,6 +211,21 @@ for (const { project, version } of chosen) {
   });
 }
 
+// Mod maison LUNA UI (textures uniquement), construit depuis luna-ui/ et livré dans overrides/mods.
+const walk = (dir) => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
+const UI = join(ROOT, "luna-ui");
+const uiJarName = `luna-ui-${config.version}.jar`;
+const uiJar = writeZip(
+  walk(UI).map((f) => {
+    const name = relative(UI, f).split(sep).join("/");
+    let data = readFileSync(f);
+    if (name === "fabric.mod.json")
+      data = Buffer.from(data.toString("utf8").replace("${version}", config.version).replace("${minecraft}", `~${config.minecraft}`));
+    return { name, data };
+  }),
+);
+scanJar(uiJar, "luna-ui");
+
 provided.set("minecraft", config.minecraft);
 provided.set("fabricloader", config.fabricLoader);
 provided.set("java", JAVA_VERSION);
@@ -254,8 +269,8 @@ const index = {
 };
 
 const zipFiles = [{ name: "modrinth.index.json", data: Buffer.from(JSON.stringify(index, null, 2)) }];
+zipFiles.push({ name: `overrides/mods/${uiJarName}`, data: uiJar });
 const overrides = join(ROOT, "overrides");
-const walk = (dir) => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
 if (existsSync(overrides))
   for (const f of walk(overrides)) zipFiles.push({ name: relative(ROOT, f).split(sep).join("/"), data: readFileSync(f) });
 
@@ -265,9 +280,10 @@ writeFileSync(out, writeZip(zipFiles));
 
 const table = chosen
   .map(({ project, version, mod }) => `| [${project.title}](https://modrinth.com/mod/${project.slug}) | ${version.version_number} | ${mod?.why ?? "Dépendance"} |`)
+  .concat(`| LUNA UI (maison) | ${config.version} | Thème visuel : logo, panorama, boutons et menus |`)
   .join("\n");
 writeFileSync(
   join(ROOT, "MODS.md"),
-  `# Mods de ${config.name} ${config.version}\n\nMinecraft ${config.minecraft} · Fabric Loader ${config.fabricLoader} · ${chosen.length} mods\n\n| Mod | Version | Rôle |\n|---|---|---|\n${table}\n`,
+  `# Mods de ${config.name} ${config.version}\n\nMinecraft ${config.minecraft} · Fabric Loader ${config.fabricLoader} · ${chosen.length + 1} mods\n\n| Mod | Version | Rôle |\n|---|---|---|\n${table}\n`,
 );
-console.log(`\n✔ ${relative(ROOT, out)} (${chosen.length} mods)`);
+console.log(`\n✔ ${relative(ROOT, out)} (${chosen.length} mods + LUNA UI)`);
