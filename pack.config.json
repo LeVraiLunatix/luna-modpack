@@ -11,7 +11,8 @@
         "reeses-sodium-options": "mc26.2-2.2.3+fabric",
         "sodium-extra": "mc26.2-0.9.3+fabric",
         "simple-voice-chat": "fabric-2.6.24+26.2"
-      }
+      },
+      "dataVersion": 4903
     },
     "26.1.2": {
       "fabricLoader": "0.19.5",
@@ -22,7 +23,8 @@
         "sodium-extra": "mc26.1.2-0.9.3+fabric",
         "simple-voice-chat": "fabric-2.6.23+26.1.2",
         "subtle-effects": "1.14.3"
-      }
+      },
+      "dataVersion": 4790
     }
   },
   "editions": {
@@ -153,7 +155,10 @@
     "renderDistance": "12",
     "simulationDistance": "10",
     "darkMojangStudiosBackground": "true",
-    "key_key.saveToolbarActivator": "key.keyboard.unknown"
+    "key_key.saveToolbarActivator": "key.keyboard.unknown",
+    "key_key.freecam.toggle": "key.keyboard.f7",
+    "key_key.mute_microphone": "key.keyboard.f8",
+    "key_key.shouldersurfing.swap_shoulder": "key.keyboard.j"
   },
   "server": {
     "memory": "4G",

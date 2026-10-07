@@ -291,7 +291,9 @@ async function buildEdition(mc, edition) {
   if (full) zipFiles.push({ name: `overrides/resourcepacks/${UI_PACK}`, data: uiPack });
 
   // Réglages appliqués par Default Options au tout premier lancement seulement (jamais écrasés ensuite).
-  const lines = Object.entries(config.defaultOptions ?? {}).map(([k, v]) => `${k}:${v}`);
+  // La ligne « version » est indispensable : sans elle, Minecraft prend le fichier pour un très vieux format,
+  // tente de le convertir, échoue (« Failed to load options ») et repart des réglages d'usine.
+  const lines = [`version:${target.dataVersion}`, ...Object.entries(config.defaultOptions ?? {}).map(([k, v]) => `${k}:${v}`)];
   if (full) {
     const enabled = ["vanilla", ...resourcepacks.filter((p) => p.entry.enabled !== false).map((p) => `file/${p.file.filename}`), `file/${UI_PACK}`];
     const incompatible = resourcepacks.filter((p) => p.entry.incompatible || !p.version.game_versions.includes(mc)).map((p) => `file/${p.file.filename}`);

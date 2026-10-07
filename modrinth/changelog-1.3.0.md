@@ -22,8 +22,8 @@
 - The title screen is back to the hand-made night panorama: moon, Milky Way, aurora, mirror lake and blocky mountains.
 
 ### 🛠️ Fixes and defaults
-- The creative "save toolbar" key no longer shares **C** with the zoom.
-- Better Block Entities and Entity Model Features checked together: chests, banners and shulkers render normally.
+- No more key conflicts out of the box: the creative "save toolbar" key no longer shares **C** with the zoom, Freecam moves to **F7**, voice chat mute to **F8** and the shoulder swap to **J** (the map stays on **M**, waypoints on **U**).
+- Fixed LUNA's first-launch defaults being ignored ("Failed to load options"), which also lost the resource pack order.
 
 ### ℹ️ Notes
 - Simple Voice Chat, Voxy, C2ME, Nvidium, Sound Physics Remastered and Wakes are beta builds, VMP is alpha: they're the latest versions available.
