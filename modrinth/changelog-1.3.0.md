@@ -15,6 +15,11 @@
 
 ### ➕ New mods
 - **REI** (recipes and uses), **Freecam**, **Shoulder Surfing Reloaded**, **Simple Voice Chat**, **Flashback** (cinematic recordings, Voxy-aware).
+- **Essential** (friends, invite them into your singleplayer world, screenshots) and **Ji AFK Cinematic** (a cinematic camera kicks in when you go AFK).
+
+### 🌙 New look
+- New LUNA logo in a blocky, carved-stone style: moonstone lavender, an indigo band, cracks and a crescent carved into the A.
+- The title screen is back to the hand-made night panorama: moon, Milky Way, aurora, mirror lake and blocky mountains.
 
 ### 🛠️ Fixes and defaults
 - The creative "save toolbar" key no longer shares **C** with the zoom.

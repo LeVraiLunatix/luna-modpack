@@ -100,6 +100,8 @@
     { "slug": "freecam", "why": "Caméra libre pour explorer ou préparer une capture", "lite": true },
     { "slug": "shoulder-surfing-reloaded", "why": "Troisième personne par-dessus l'épaule", "lite": true },
     { "slug": "simple-voice-chat", "why": "Chat vocal de proximité (le serveur doit l'avoir aussi)", "lite": true },
+    { "slug": "essential", "why": "Amis, invitations dans ton monde solo, captures d'écran, cosmétiques", "lite": true },
+    { "slug": "ji-afk-cinematic", "why": "Caméra cinématique automatique quand tu es AFK", "lite": true },
     { "slug": "flashback", "why": "Enregistre et monte des vidéos cinématiques (compatible Voxy)" },
     { "slug": "chunky", "why": "Prégénère le monde pour que Voxy affiche tout l'horizon", "lite": true },
     { "slug": "zoomify", "why": "Zoom (pratique avec une vue aussi lointaine)", "lite": true },

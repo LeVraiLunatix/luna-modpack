@@ -194,30 +194,96 @@ function drawRockShape(c, mask, { depth = 3, seed = 7 } = {}) {
   }
 }
 
+// Lettres larges façon logo Minecraft (10 × 8 cases, chaque case = 4 pixels de la grille 256×64).
+const BLOCK = {
+  L: ["###.......", "###.......", "###.......", "###.......", "###.......", "###.......", "##########", "##########"],
+  U: ["###....###", "###....###", "###....###", "###....###", "###....###", "###....###", "##########", ".########."],
+  N: ["###....###", "####...###", "#####..###", "###.##.###", "###..#####", "###...####", "###....###", "###....###"],
+  A: [".########.", "##########", "###....###", "###....###", "##########", "##########", "###....###", "###....###"],
+};
+
+// Logo dans l'esprit du logo Minecraft, aux couleurs LUNA : face en pierre de lune (lavande claire en haut,
+// bande indigo en bas), fissures gravées, contour épais, relief qui descend sous les lettres, et un croissant
+// de lune gravé dans le A (là où Minecraft met sa tête de creeper).
 function makeLogo() {
   const c = new Canvas(256, 64);
-  const s = 5, glyphW = 6 * s, gap = s;
-  const textW = 4 * glyphW + 3 * gap;
-  const moonR = 17, moonGap = 9;
-  const total = moonR * 2 + moonGap + textW;
-  const x0 = Math.round((256 - total) / 2), y0 = 3;
-  const moon = crescentMask(x0 + moonR, y0 + 17.5, moonR, 14.5, 9, -5);
-  const letters = [];
+  const s = 4, glyphW = 10 * s, glyphH = 8 * s, gap = s, depth = 5, outline = 2;
+  const total = 4 * glyphW + 3 * gap;
+  const x0 = Math.round((256 - total) / 2), y0 = outline + 1;
+  const key = (x, y) => y * 256 + x;
+  const face = new Set();
+  const letterOf = new Map();
   [..."LUNA"].forEach((ch, i) => {
-    const gx = x0 + moonR * 2 + moonGap + i * (glyphW + gap);
-    BIG[ch].forEach((row, ry) =>
+    const gx = x0 + i * (glyphW + gap);
+    BLOCK[ch].forEach((row, ry) =>
       [...row].forEach((cell, rx) => {
         if (cell !== "#") return;
-        for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) letters.push([gx + rx * s + xx, y0 + ry * s + yy]);
+        for (let yy = 0; yy < s; yy++)
+          for (let xx = 0; xx < s; xx++) {
+            const k = key(gx + rx * s + xx, y0 + ry * s + yy);
+            face.add(k);
+            letterOf.set(k, i);
+          }
       }),
     );
   });
-  drawRockShape(c, moon, { depth: 3, seed: 11 });
-  drawRockShape(c, letters, { depth: 3, seed: 5 });
-  sparkle(c, x0 + 40, y0 + 1, 2, [255, 255, 255, 1]);
-  sparkle(c, x0 + total + 6, y0 + 4, 2, [214, 204, 255, 1]);
-  sparkle(c, x0 + total + 12, y0 + 30, 1, [255, 255, 255, 0.9]);
-  sparkle(c, x0 - 7, y0 + 33, 1, [214, 204, 255, 0.9]);
+  // Relief vers le bas, puis contour épais autour de l'ensemble.
+  const side = new Map();
+  for (const k of face)
+    for (let d = 1; d <= depth; d++) {
+      const k2 = k + d * 256;
+      if (!face.has(k2) && !side.has(k2)) side.set(k2, d);
+    }
+  const solid = new Set([...face, ...side.keys()]);
+  for (const k of solid) {
+    const x = k % 256, y = Math.floor(k / 256);
+    for (let dy = -outline; dy <= outline; dy++)
+      for (let dx = -outline; dx <= outline; dx++)
+        if (!solid.has(key(x + dx, y + dy))) c.set(x + dx, y + dy, INK);
+  }
+  for (const [k, d] of side) c.set(k % 256, Math.floor(k / 256), mix([58, 44, 132, 1], [26, 20, 66, 1], (d - 1) / (depth - 1)));
+
+  // Face : deux tons séparés net, grain de pierre, biseau.
+  const band = Math.round(glyphH * 0.62);
+  for (const k of face) {
+    const x = k % 256, y = Math.floor(k / 256), ly = y - y0;
+    let col = ly < band ? mix([247, 244, 255, 1], [204, 194, 246, 1], ly / band) : mix([150, 132, 232, 1], [104, 86, 190, 1], (ly - band) / (glyphH - band));
+    if (ly === band) col = [96, 80, 182, 1];
+    col = shade(col, 0.95 + 0.1 * hash3(x, y, 9));
+    if (!face.has(k - 256)) col = mix(col, [255, 255, 255, 1], 0.6);
+    else if (!face.has(k - 1)) col = mix(col, [255, 255, 255, 1], 0.25);
+    else if (!face.has(k + 1)) col = shade(col, 0.85);
+    c.set(x, y, col);
+  }
+  // Fissures : petits tracés anguleux dans la partie claire, avec un liseré clair dessous (effet gravé).
+  const r = rng(17);
+  const faceList = [...face].filter((k) => Math.floor(k / 256) - y0 < band - 2);
+  for (let n = 0; n < 16; n++) {
+    let k = faceList[Math.floor(r() * faceList.length)];
+    const dirs = [[1, 0], [1, 1], [1, -1], [0, 1], [-1, 1]];
+    let [dx, dy] = dirs[Math.floor(r() * dirs.length)];
+    for (let step = 0, len = 4 + Math.floor(r() * 8); step < len; step++) {
+      const x = k % 256, y = Math.floor(k / 256);
+      if (!face.has(k) || y - y0 >= band - 1) break;
+      c.set(x, y, [126, 110, 206, 1]);
+      if (face.has(k + 256) && y + 1 - y0 < band) c.set(x, y + 1, [255, 255, 255, 1]);
+      if (r() < 0.3) [dx, dy] = dirs[Math.floor(r() * dirs.length)];
+      k = key(x + dx, y + dy);
+    }
+  }
+  // Croissant gravé au centre de la barre haute du A, avec un liseré clair dessous (effet gravé).
+  const ax = x0 + 3 * (glyphW + gap);
+  const moon = crescentMask(ax + glyphW / 2, y0 + 4, 3.6, 3, 1.6, -1);
+  const carved = new Set(moon.map(([x, y]) => key(x, y)));
+  for (const [x, y] of moon) {
+    if (!face.has(key(x, y))) continue;
+    c.set(x, y, [70, 54, 156, 1]);
+    if (face.has(key(x, y + 1)) && !carved.has(key(x, y + 1))) c.set(x, y + 1, [255, 255, 255, 1]);
+  }
+
+  sparkle(c, x0 - 6, y0 + 4, 2, [255, 255, 255, 1]);
+  sparkle(c, x0 + total + 6, y0 + 2, 2, [214, 204, 255, 1]);
+  sparkle(c, x0 + total + 9, y0 + 26, 1, [255, 255, 255, 0.9]);
   return c;
 }
 

@@ -29,6 +29,8 @@ const keep = process.argv.includes("--keep");
 const menu = process.argv.includes("--menu");
 // --panorama : active la capture panoramique native (Ctrl+F2 en jeu) et laisse le jeu ouvert.
 const panorama = process.argv.includes("--panorama");
+// --without <regex> : mods à ne pas installer pour ce test (ex. « essential », qui bloque l'écran titre avec un compte hors ligne).
+const without = arg("without", null);
 const UA = { headers: { "User-Agent": "LeVraiLunatix/luna-modpack (test launcher)" } };
 
 async function fetchJson(url) {
@@ -142,6 +144,7 @@ for (const file of index.files) {
   if (file.env?.client === "unsupported") continue;
   // La capture panoramique rend 6 images dans la même frame, ce que la minimap Xaero ne supporte pas.
   if (panorama && /xaero/i.test(file.path)) continue;
+  if (without && file.path.startsWith("mods/") && new RegExp(without, "i").test(file.path)) continue;
   const cached = join(ROOT, ".cache", `${file.hashes.sha1}${file.path.slice(file.path.lastIndexOf("."))}`);
   // writeFileSync plutôt que cpSync : cpSync échoue à écraser un fichier dont le nom contient « § ».
   if (existsSync(cached)) {
@@ -186,6 +189,18 @@ if (existsSync(levelDat)) {
   if (at >= 0 && raw[at + key.length] !== 1) {
     raw[at + key.length] = 1;
     writeFileSync(levelDat, gzipSync(raw));
+  }
+}
+
+// Capture la fenêtre du jeu ; l'ancienne image est supprimée d'abord pour ne jamais relire une capture périmée.
+function capture(path) {
+  mkdirSync(dirname(path), { recursive: true });
+  rmSync(path, { force: true });
+  try {
+    execFileSync("powershell", ["-NoProfile", "-File", join(ROOT, "tools", "capture-window.ps1"), "-ProcessId", String(game.pid), "-Out", path]);
+    console.log(`Capture : ${path}`);
+  } catch {
+    console.log("⚠ Capture impossible : la fenêtre du jeu n'a pas pu passer au premier plan.");
   }
 }
 
@@ -235,7 +250,7 @@ if (result.ok && menu) {
   await new Promise((r) => setTimeout(r, 30_000));
   mkdirSync(join(TEST, "screens"), { recursive: true });
   const shot = join(TEST, "screens", "title.png");
-  execFileSync("powershell", ["-NoProfile", "-File", join(ROOT, "tools", "capture-window.ps1"), "-ProcessId", String(game.pid), "-Out", shot]);
+  capture(shot);
   console.log(`Écran titre capturé : ${shot}`);
 } else if (result.ok && panorama) {
   console.log("Monde chargé : place-toi, puis Ctrl+F2 (captures dans .test/instance/screenshots). Ferme le jeu pour finir.");
@@ -244,7 +259,7 @@ if (result.ok && menu) {
   console.log("Monde chargé, le jeu tourne 45 s pour laisser Voxy et les mods travailler…");
   await new Promise((r) => setTimeout(r, 45_000));
   mkdirSync(join(TEST, "screens"), { recursive: true });
-  execFileSync("powershell", ["-NoProfile", "-File", join(ROOT, "tools", "capture-window.ps1"), "-ProcessId", String(game.pid), "-Out", join(TEST, "screens", "world.png")]);
+  capture(join(TEST, "screens", "world.png"));
 }
 const crashed = existsSync(join(INSTANCE, "crash-reports")) && readdirSync(join(INSTANCE, "crash-reports")).length > 0;
 if (!keep || !result.ok) game.kill();
