@@ -1,0 +1,11 @@
+Copyright (c) 2026 Lunatix (LeVraiLunatix). All rights reserved.
+
+This repository contains the LUNA modpack build tools and the LUNA UI theme
+(scripts, generated textures, title screen panorama, logo, icon and splash texts).
+The source is published so that anyone can read and verify it, but no license is
+granted to copy, modify or redistribute it outside of the LUNA modpack without
+written permission.
+
+Third-party mods, resource packs and shaders referenced by the modpack are NOT part
+of this repository: they are downloaded from their official Modrinth pages and
+remain the property of their respective authors, under their own licenses.

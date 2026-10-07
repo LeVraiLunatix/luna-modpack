@@ -101,3 +101,9 @@ lance le jeu en solo (compte hors ligne), vérifie qu'il charge le monde sans cr
 Crée un projet de type **Modpack**, puis **Versions → Create a version** et dépose le `.mrpack` (loader Fabric,
 version 26.2), avec `branding/out/icon.png` en icône. Pense à créditer et lier Voxy sur la page du projet, comme
 son auteur le demande. Sona et LUNA UI sont des mods maison livrés dans le pack (overrides).
+
+## Licence
+
+© 2026 Lunatix — tous droits réservés (voir [LICENSE](LICENSE)). Le code et le thème LUNA UI sont publiés pour être
+lisibles et vérifiables, pas pour être réutilisés. Les mods, packs et shaders tiers restent la propriété de leurs
+auteurs et sont téléchargés depuis leurs pages Modrinth officielles.
