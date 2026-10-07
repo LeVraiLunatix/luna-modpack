@@ -773,9 +773,9 @@ Ready when you are!
 console.log("Logo et sous-titre…");
 // Le logo fourni (branding/source/logo-luna.png) est recoloré ; à défaut, le logo pixel art dessiné par code.
 const LOGO_SOURCE = join(ROOT, "branding", "source", "logo-luna.png");
-let logo;
+let logo, hd = null;
 if (existsSync(LOGO_SOURCE)) {
-  const hd = recolorLogo(decodePng(readFileSync(LOGO_SOURCE)));
+  hd = recolorLogo(decodePng(readFileSync(LOGO_SOURCE)));
   save(join(OUT, "logo-hd.png"), hd); // pour le site et Modrinth
   logo = fitLogo(hd);
 } else logo = makeLogo().upscale(4);
@@ -844,4 +844,24 @@ const place = (face, ox, oy) => { for (let y = 0; y < s; y++) for (let x = 0; x 
 place(faces[4], s, 0);
 place(faces[5], s, 2 * s);
 save(join(OUT, "panorama-cross.png"), cross);
+
+// Visuel de partage (site, README, aperçus de liens) : panorama de face + logo, sans aucune interface.
+{
+  const og = new Canvas(1200, 630);
+  const sky = resize(faces[0], 1200, 1200);
+  const top = 300; // cadre centré un peu au-dessus de l'horizon : la lune et le lac restent visibles
+  for (let y = 0; y < 630; y++) for (let x = 0; x < 1200; x++) og.set(x, y, sky.get(x, y + top));
+  for (let y = 0; y < 630; y++) {
+    const a = 0.45 * (1 - smoothstep(0, 0.45, y / 630)) + 0.35 * smoothstep(0.7, 1, y / 630);
+    for (let x = 0; x < 1200; x++) og.blend(x, y, [8, 6, 26, a]);
+  }
+  const mark = hd ?? makeLogo().upscale(4);
+  const w = 620, h = Math.round((mark.height * w) / mark.width);
+  const small = resize(mark, w, h);
+  const ox = (1200 - w) / 2, oy = 150;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) og.blend(ox + x, oy + y, small.get(x, y));
+  const sub = makeSubtitle("Beyond the horizon").upscale(5);
+  for (let y = 0; y < sub.height; y++) for (let x = 0; x < sub.width; x++) og.blend(Math.round((1200 - sub.width) / 2) + x, oy + h - 10 + y, sub.get(x, y));
+  save(join(OUT, "og.png"), og);
+}
 console.log("✔ Identité visuelle générée");

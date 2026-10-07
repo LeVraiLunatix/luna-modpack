@@ -4,7 +4,7 @@ Modpack Fabric pour **Minecraft 26.2 et 26.1.2** : un maximum d'optimisations, u
 de l'ambiance (sons, particules, nuages, lumières dynamiques), une sélection de packs de ressources et un thème
 **LUNA** sur tous les menus.
 
-![Écran titre](branding/out/screenshot-title.png)
+![LUNA](branding/out/og.png)
 
 Site : **https://luna-modpack.vercel.app** (sources : [LeVraiLunatix/luna-site](https://github.com/LeVraiLunatix/luna-site)).
 Le contenu exact (mods, packs, shaders, versions) est dans [MODS.md](MODS.md), régénéré à chaque build.
