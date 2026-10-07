@@ -8,12 +8,16 @@ public class Win {
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int cmd);
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
+  [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
   public struct RECT { public int L, T, R, B; }
 }
 "@
 $h = (Get-Process -Id $ProcessId).MainWindowHandle
 [Win]::ShowWindow($h, 9) | Out-Null
+# Windows refuse le premier plan à un processus d'arrière-plan, sauf juste après une frappe clavier : on simule Alt.
+[Win]::keybd_event(0x12, 0, 0, [UIntPtr]::Zero)
 [Win]::SetForegroundWindow($h) | Out-Null
+[Win]::keybd_event(0x12, 0, 2, [UIntPtr]::Zero)
 Start-Sleep -Milliseconds 1500
 $r = New-Object Win+RECT
 [Win]::GetWindowRect($h, [ref]$r) | Out-Null

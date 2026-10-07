@@ -513,6 +513,14 @@ function makeBackgrounds() {
     for (let x = 0; x < 32; x++) { c.set(x, 0, first); c.set(x, 1, second); }
     return c;
   };
+  // Voile posé sur le panorama : assombrit le haut (lisibilité du logo) et le bas (boutons).
+  const overlay = new Canvas(16, 256);
+  for (let y = 0; y < 256; y++) {
+    const t = y / 255;
+    const a = 0.3 * (1 - smoothstep(0, 0.3, t)) + 0.45 * smoothstep(0.65, 1, t);
+    for (let x = 0; x < 16; x++) overlay.set(x, y, [6, 4, 20, a]);
+  }
+  save(join(G, "title", "background", "panorama_overlay.png"), overlay);
   const glow = [178, 162, 255, 0.55], shadow = [0, 0, 0, 0.7];
   save(join(G, "header_separator.png"), sep(glow, shadow));
   save(join(G, "footer_separator.png"), sep(shadow, glow));

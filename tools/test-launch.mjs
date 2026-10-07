@@ -75,8 +75,16 @@ for (const lib of fabric.libraries) {
 }
 classpath.push(clientJar);
 
-// Seul l'index des assets est nécessaire pour démarrer (les sons manqueront, sans importance ici).
-await download(vanilla.assetIndex.url, join(ASSETS, "indexes", `${vanilla.assetIndex.id}.json`));
+// Assets vanilla (textures, polices, langues…) sauf les sons, inutiles ici et très lourds.
+const assetIndex = join(ASSETS, "indexes", `${vanilla.assetIndex.id}.json`);
+await download(vanilla.assetIndex.url, assetIndex);
+const objects = Object.entries(JSON.parse(readFileSync(assetIndex, "utf8")).objects).filter(([name]) => !/sounds?\//.test(name));
+for (let i = 0; i < objects.length; i += 32)
+  await Promise.all(
+    objects.slice(i, i + 32).map(([, { hash }]) =>
+      download(`https://resources.download.minecraft.net/${hash.slice(0, 2)}/${hash}`, join(ASSETS, "objects", hash.slice(0, 2), hash)),
+    ),
+  );
 
 // ---------- Installation du pack ----------
 
@@ -119,7 +127,11 @@ if (!existsSync(join(INSTANCE, "saves", WORLD))) {
 
 rmSync(join(INSTANCE, "crash-reports"), { recursive: true, force: true });
 // Sans ça, le premier lancement s'arrête sur l'écran d'accessibilité au lieu d'ouvrir le monde.
-if (!existsSync(join(INSTANCE, "options.txt"))) writeFileSync(join(INSTANCE, "options.txt"), "onboardAccessibility:false\n");
+// Le jeu réécrit options.txt à chaque fermeture : on force nos réglages à chaque lancement.
+const optionsFile = join(INSTANCE, "options.txt");
+const forced = { onboardAccessibility: "false", lang: "fr_fr" };
+const options = (existsSync(optionsFile) ? readFileSync(optionsFile, "utf8") : "").split(/\r?\n/).filter((l) => l && !(l.split(":")[0] in forced));
+writeFileSync(optionsFile, [...options, ...Object.entries(forced).map(([k, v]) => `${k}:${v}`)].join("\n") + "\n");
 const args = [
   "-Xms2G", "-Xmx6G",
   "-cp", classpath.join(";"),
@@ -140,7 +152,7 @@ const result = await new Promise((resolve) => {
     const text = d.toString();
     log.push(text);
     process.stdout.write(text.split("\n").filter((l) => /ERROR|FATAL|Exception|joined the game|Loading Minecraft|mods/.test(l)).map((l) => `  │ ${l}\n`).join(""));
-    if (!menu && /LunaTest joined the game/.test(text)) { clearTimeout(timeout); resolve({ ok: true }); }
+    if (!menu && /LunaTest\[.*logged in with entity id/.test(text)) { clearTimeout(timeout); resolve({ ok: true }); }
     // L'écran titre interroge Realms dès qu'il s'affiche : c'est notre signal.
     if (menu && /realms/i.test(text)) { clearTimeout(timeout); resolve({ ok: true }); }
   };
@@ -158,6 +170,8 @@ if (result.ok && menu) {
 } else if (result.ok) {
   console.log("Monde chargé, le jeu tourne 45 s pour laisser Voxy et les mods travailler…");
   await new Promise((r) => setTimeout(r, 45_000));
+  mkdirSync(join(TEST, "screens"), { recursive: true });
+  execFileSync("powershell", ["-NoProfile", "-File", join(ROOT, "tools", "capture-window.ps1"), "-ProcessId", String(game.pid), "-Out", join(TEST, "screens", "world.png")]);
 }
 const crashed = existsSync(join(INSTANCE, "crash-reports")) && readdirSync(join(INSTANCE, "crash-reports")).length > 0;
 if (!keep || !result.ok) game.kill();
