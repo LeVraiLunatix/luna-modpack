@@ -1,4 +1,4 @@
-# Contenu de LUNA 1.3.0
+# Contenu de LUNA 1.3.1
 
 Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; les autres versions ont les mêmes mods dès qu'ils existent pour elles.
 
@@ -90,7 +90,7 @@ Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; 
 | [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map) | fabric-26.2-1.47.0 | Carte du monde (touche M) | ✓ | ✓ |
 | [YetAnotherConfigLib (YACL)](https://modrinth.com/mod/yacl) | 3.9.7+26.2-fabric | Dépendance | ✓ | ✓ |
 | [Zoomify (Zoom)](https://modrinth.com/mod/zoomify) | 2.16.3+26.2 | Zoom (pratique avec une vue aussi lointaine) | ✓ |  |
-| LUNA UI (maison) | 1.3.0 | Thème visuel : logo, panorama, boutons et menus | ✓ |  |
+| LUNA UI (maison) | 1.3.1 | Thème visuel : logo, panorama, boutons et menus | ✓ |  |
 | Sona pour Minecraft (maison) | sona-minecraft-1.3.0.jar | Lecteur Sona en jeu (titre en cours, contrôles, /sona) | ✓ |  |
 
 ## Packs de ressources

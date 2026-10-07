@@ -287,10 +287,78 @@ function makeLogo() {
   return c;
 }
 
+// ---------- Logo fourni (branding/source/logo-luna.png), recoloré aux couleurs LUNA ----------
+
+// Dégradé appliqué à la luminosité : contour noir → encre de nuit, bande sombre → indigo,
+// pierre grise → lavande, reflets blancs → blanc lunaire. L'alpha d'origine est conservé.
+const LOGO_RAMP = [
+  [0.0, [10, 8, 30]],
+  [0.1, [16, 12, 44]],
+  [0.22, [66, 50, 148]],
+  [0.4, [104, 86, 192]],
+  [0.6, [168, 152, 240]],
+  [0.74, [214, 206, 252]],
+  [0.88, [238, 234, 255]],
+  [1.0, [255, 255, 255]],
+];
+function rampColor(l) {
+  for (let i = 1; i < LOGO_RAMP.length; i++)
+    if (l <= LOGO_RAMP[i][0]) {
+      const [l0, c0] = LOGO_RAMP[i - 1], [l1, c1] = LOGO_RAMP[i];
+      return mix(c0, c1, (l - l0) / (l1 - l0));
+    }
+  return LOGO_RAMP[LOGO_RAMP.length - 1][1];
+}
+
+function recolorLogo(src) {
+  // Recadrage serré sur la partie visible.
+  let x0 = src.width, y0 = src.height, x1 = 0, y1 = 0;
+  for (let y = 0; y < src.height; y++)
+    for (let x = 0; x < src.width; x++)
+      if (src.get(x, y)[3] > 0.02) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  const out = new Canvas(x1 - x0 + 1, y1 - y0 + 1);
+  for (let y = y0; y <= y1; y++)
+    for (let x = x0; x <= x1; x++) {
+      const [r, g, b, a] = src.get(x, y);
+      if (a <= 0) continue;
+      const l = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      out.set(x - x0, y - y0, [...rampColor(l), a]);
+    }
+  return out;
+}
+
+// Réduction par moyenne de zone (alpha prémultiplié) : nette et sans halo.
+function resize(src, w, h) {
+  const out = new Canvas(w, h);
+  const sx = src.width / w, sy = src.height / h;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      let r = 0, g = 0, b = 0, a = 0, n = 0;
+      for (let yy = Math.floor(y * sy); yy < Math.min(src.height, Math.ceil((y + 1) * sy)); yy++)
+        for (let xx = Math.floor(x * sx); xx < Math.min(src.width, Math.ceil((x + 1) * sx)); xx++) {
+          const p = src.get(xx, yy);
+          r += p[0] * p[3]; g += p[1] * p[3]; b += p[2] * p[3]; a += p[3]; n++;
+        }
+      out.set(x, y, a ? [r / a, g / a, b / a, a / n] : [0, 0, 0, 0]);
+    }
+  return out;
+}
+
+// Place le logo dans la texture du titre (1024×256 dont seules les ~176 premières lignes sont affichées).
+function fitLogo(logo) {
+  const scale = Math.min(1000 / logo.width, 166 / logo.height);
+  const w = Math.round(logo.width * scale), h = Math.round(logo.height * scale);
+  const small = resize(logo, w, h);
+  const c = new Canvas(1024, 256);
+  const ox = Math.round((1024 - w) / 2), oy = Math.max(0, 170 - h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) c.set(ox + x, oy + y, small.get(x, y));
+  return c;
+}
+
 function makeSubtitle(text) {
   const c = new Canvas(128, 16);
   const { cells, width } = scriptTextMask(text);
-  const x0 = Math.round((128 - width) / 2), y0 = 3;
+  const x0 = Math.round((128 - width) / 2), y0 = 6;
   for (const [x, y] of cells) c.set(x0 + x + 1, y0 + y + 1, [20, 14, 52, 1]);
   for (const [x, y] of cells) c.set(x0 + x, y0 + y, mix([246, 240, 255, 1], [196, 178, 255, 1], y / 8));
   sparkle(c, x0 + width + 3, y0 + 1, 1, [255, 236, 200, 1]);
@@ -703,11 +771,18 @@ Ready when you are!
 // ---------- Génération ----------
 
 console.log("Logo et sous-titre…");
-const logo = makeLogo();
-save(join(MC, "textures", "gui", "title", "minecraft.png"), logo.upscale(4));
-save(join(MC, "textures", "gui", "title", "minceraft.png"), logo.upscale(4));
+// Le logo fourni (branding/source/logo-luna.png) est recoloré ; à défaut, le logo pixel art dessiné par code.
+const LOGO_SOURCE = join(ROOT, "branding", "source", "logo-luna.png");
+let logo;
+if (existsSync(LOGO_SOURCE)) {
+  const hd = recolorLogo(decodePng(readFileSync(LOGO_SOURCE)));
+  save(join(OUT, "logo-hd.png"), hd); // pour le site et Modrinth
+  logo = fitLogo(hd);
+} else logo = makeLogo().upscale(4);
+save(join(MC, "textures", "gui", "title", "minecraft.png"), logo);
+save(join(MC, "textures", "gui", "title", "minceraft.png"), logo);
 save(join(MC, "textures", "gui", "title", "edition.png"), makeSubtitle("Beyond the horizon").upscale(4));
-save(join(OUT, "logo.png"), logo.upscale(4));
+save(join(OUT, "logo.png"), logo);
 
 console.log("Widgets et fonds de menus…");
 const sprites = makeWidgets();
