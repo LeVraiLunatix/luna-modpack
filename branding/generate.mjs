@@ -655,16 +655,34 @@ save(join(ROOT, "luna-ui", "assets", "luna_ui", "icon.png"), icon);
 console.log("Splashs…");
 saveText(join(MC, "texts", "splashes.txt"), SPLASHES);
 
+// Étalonnage aux couleurs LUNA, identique pour chaque pixel de chaque face (les raccords restent invisibles) :
+// ombres poussées vers l'indigo, tons moyens vers le violet, hautes lumières vers le blanc lunaire lavande.
+function gradeLuna(canvas, strength = 0.55) {
+  const shadow = [22, 16, 62], mid = [96, 78, 168], light = [238, 232, 255];
+  for (let i = 0; i < canvas.width * canvas.height; i++) {
+    const o = i * 4, d = canvas.data;
+    const r = d[o], g = d[o + 1], b = d[o + 2];
+    const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    // Courbe douce : relève un peu les ombres pour que la nuit reste lisible derrière les menus.
+    const l = Math.pow(lum, 0.85);
+    const tone = l < 0.5 ? mix(shadow, mid, l / 0.5) : mix(mid, light, (l - 0.5) / 0.5);
+    const graded = [0, 1, 2].map((c) => lerp([r, g, b][c], tone[c] * (0.55 + 0.9 * l), strength));
+    d[o] = graded[0]; d[o + 1] = graded[1]; d[o + 2] = graded[2];
+  }
+  return canvas;
+}
+
 // Panorama : de préférence le vrai panorama 3D capturé en jeu (branding/panorama/, voir README),
 // sinon le décor procédural.
 const PANO = join(ROOT, "branding", "panorama");
 const panoOut = (i) => join(MC, "textures", "gui", "title", "background", `panorama_${i}.png`);
 let faces;
 if ([0, 1, 2, 3, 4, 5].every((i) => existsSync(join(PANO, `panorama_${i}.png`)))) {
-  console.log("Panorama 3D capturé en jeu…");
+  console.log("Panorama 3D capturé en jeu + étalonnage LUNA…");
   faces = [0, 1, 2, 3, 4, 5].map((i) => {
-    copyFileSync(join(PANO, `panorama_${i}.png`), panoOut(i));
-    return decodePng(readFileSync(join(PANO, `panorama_${i}.png`)));
+    const face = gradeLuna(decodePng(readFileSync(join(PANO, `panorama_${i}.png`))));
+    save(panoOut(i), face);
+    return face;
   });
 } else {
   console.log("Panorama procédural (6 × 1024², quelques secondes)…");
