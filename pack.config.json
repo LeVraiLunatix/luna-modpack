@@ -1,51 +1,84 @@
 {
   "name": "LUNA",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "summary": "Fabric ultra-optimized pack with Voxy far rendering, a full LUNA theme, ambience mods and curated resource packs.",
-  "minecraft": "26.2",
-  "fabricLoader": "0.19.5",
+  "targets": {
+    "26.2": {
+      "fabricLoader": "0.19.5",
+      "pin": {
+        "sodium": "mc26.2-0.9.1-fabric",
+        "iris": "1.11.2+26.2-fabric",
+        "reeses-sodium-options": "mc26.2-2.2.3+fabric",
+        "sodium-extra": "mc26.2-0.9.3+fabric",
+        "simple-voice-chat": "fabric-2.6.24+26.2"
+      }
+    },
+    "26.1.2": {
+      "fabricLoader": "0.19.5",
+      "pin": {
+        "sodium": "mc26.1.2-0.9.1-fabric",
+        "iris": "1.11.2+26.1-fabric",
+        "reeses-sodium-options": "mc26.1.2-2.2.3+fabric",
+        "sodium-extra": "mc26.1.2-0.9.3+fabric",
+        "simple-voice-chat": "fabric-2.6.23+26.1.2",
+        "subtle-effects": "1.14.3"
+      }
+    }
+  },
+  "editions": {
+    "full": {
+      "name": "LUNA",
+      "file": "LUNA",
+      "summary": "Fabric ultra-optimized pack with Voxy far rendering, a full LUNA theme, ambience mods and curated resource packs."
+    },
+    "lite": {
+      "name": "LUNA Lite",
+      "file": "LUNA-Lite",
+      "summary": "Lightweight LUNA: every performance mod, Voxy, maps and the LUNA theme, without resource packs, shaders or ambience mods."
+    }
+  },
   "mods": [
-    { "slug": "fabric-api", "why": "Bibliothèque de base Fabric" },
-    { "slug": "voxy", "why": "LOD : rendu de terrain à très longue distance" },
-    { "slug": "sodium", "why": "Moteur de rendu réécrit (gros gain de FPS)" },
-    { "slug": "sodium-extra", "why": "Réglages graphiques supplémentaires pour Sodium" },
-    { "slug": "reeses-sodium-options", "why": "Menu d'options Sodium plus lisible" },
-    { "slug": "lithium", "why": "Optimise la logique du jeu (IA, physique, ticks)" },
-    { "slug": "c2me-fabric", "why": "Génération/chargement des chunks multithreadé" },
-    { "slug": "scalablelux", "why": "Moteur de lumière parallélisé" },
-    { "slug": "ferrite-core", "why": "Réduit l'usage de la RAM" },
-    { "slug": "entityculling", "why": "Ne rend pas les entités cachées derrière des murs" },
-    { "slug": "moreculling", "why": "Culling supplémentaire (feuilles, blocs, cadres…)" },
-    { "slug": "immediatelyfast", "why": "Accélère le rendu immédiat (HUD, texte, entités)" },
-    { "slug": "badoptimizations", "why": "Micro-optimisations client (lightmap, ciel, etc.)" },
-    { "slug": "krypton", "why": "Optimise la pile réseau" },
-    { "slug": "alternate-current", "why": "Redstone bien plus rapide" },
-    { "slug": "clumps", "why": "Regroupe les orbes d'XP (moins de lag)" },
-    { "slug": "dynamic-fps", "why": "Baisse les FPS quand le jeu est en arrière-plan" },
-    { "slug": "lazy-language-loader", "why": "Changement de langue instantané" },
-    { "slug": "debugify", "why": "Corrige des dizaines de bugs vanilla" },
-    { "slug": "fastquit", "why": "Quitter un monde sans attendre la sauvegarde" },
-    { "slug": "modernfix-mvus", "why": "Démarrage plus rapide, moins de RAM, dizaines de correctifs (ModernFix)" },
-    { "slug": "nvidium", "why": "Rendu ultra-rapide via mesh shaders sur cartes NVIDIA (s'éteint tout seul ailleurs)" },
-    { "slug": "better-block-entities", "why": "Coffres, panneaux, lits… rendus comme des blocs (gros gain FPS)" },
-    { "slug": "particle-core", "why": "Culling et rendu optimisé des particules" },
-    { "slug": "ksyxis", "why": "Chargement des mondes plus rapide" },
-    { "slug": "structure-layout-optimizer", "why": "Génération des structures (villages, donjons) accélérée" },
-    { "slug": "forcecloseworldloadingscreen", "why": "Ferme l'écran de chargement du monde dès que possible" },
-    { "slug": "rsls", "why": "Moteur de son optimisé, plus de sources sonores" },
-    { "slug": "packet-fixer", "why": "Corrige les déconnexions et limites réseau" },
-    { "slug": "fast-ip-ping", "why": "Liste des serveurs qui ping instantanément" },
-    { "slug": "vmp-fabric", "why": "Suivi des entités et chargement des chunks optimisés côté serveur (solo inclus)" },
-    { "slug": "ixeris", "why": "Entrées clavier/souris lues sur un thread dédié (moins de micro-saccades)" },
-    { "slug": "gnetum", "why": "Répartit le rendu du HUD sur plusieurs images (minimap, Jade…)" },
-    { "slug": "cubes-without-borders", "why": "Plein écran fenêtré sans bordure (alt-tab instantané)" },
-    { "slug": "xaeros-minimap", "why": "Minimap" },
-    { "slug": "xaeros-world-map", "why": "Carte du monde (touche M)" },
-    { "slug": "xaeroplus", "why": "Fonctions extra pour les cartes Xaero" },
-    { "slug": "jade", "why": "Infos sur le bloc ou l'entité visée" },
-    { "slug": "appleskin", "why": "Saturation et valeur nutritive de la nourriture" },
-    { "slug": "clientsort", "why": "Tri de l'inventaire et des coffres (clic molette)" },
-    { "slug": "mouse-tweaks", "why": "Gestion de l'inventaire à la souris (glisser, molette)" },
+    { "slug": "fabric-api", "why": "Bibliothèque de base Fabric", "lite": true },
+    { "slug": "voxy", "why": "LOD : rendu de terrain à très longue distance", "lite": true },
+    { "slug": "sodium", "why": "Moteur de rendu réécrit (gros gain de FPS)", "lite": true },
+    { "slug": "sodium-extra", "why": "Réglages graphiques supplémentaires pour Sodium", "lite": true },
+    { "slug": "reeses-sodium-options", "why": "Menu d'options Sodium plus lisible", "lite": true },
+    { "slug": "lithium", "why": "Optimise la logique du jeu (IA, physique, ticks)", "lite": true },
+    { "slug": "c2me-fabric", "why": "Génération/chargement des chunks multithreadé", "lite": true },
+    { "slug": "scalablelux", "why": "Moteur de lumière parallélisé", "lite": true },
+    { "slug": "ferrite-core", "why": "Réduit l'usage de la RAM", "lite": true },
+    { "slug": "entityculling", "why": "Ne rend pas les entités cachées derrière des murs", "lite": true },
+    { "slug": "moreculling", "why": "Culling supplémentaire (feuilles, blocs, cadres…)", "lite": true },
+    { "slug": "immediatelyfast", "why": "Accélère le rendu immédiat (HUD, texte, entités)", "lite": true },
+    { "slug": "badoptimizations", "why": "Micro-optimisations client (lightmap, ciel, etc.)", "lite": true },
+    { "slug": "krypton", "why": "Optimise la pile réseau", "lite": true },
+    { "slug": "alternate-current", "why": "Redstone bien plus rapide", "lite": true },
+    { "slug": "clumps", "why": "Regroupe les orbes d'XP (moins de lag)", "lite": true },
+    { "slug": "dynamic-fps", "why": "Baisse les FPS quand le jeu est en arrière-plan", "lite": true },
+    { "slug": "lazy-language-loader", "why": "Changement de langue instantané", "lite": true },
+    { "slug": "debugify", "why": "Corrige des dizaines de bugs vanilla", "lite": true },
+    { "slug": "fastquit", "why": "Quitter un monde sans attendre la sauvegarde", "lite": true },
+    { "slug": "modernfix-mvus", "why": "Démarrage plus rapide, moins de RAM, dizaines de correctifs (ModernFix)", "lite": true },
+    { "slug": "nvidium", "why": "Rendu ultra-rapide via mesh shaders sur cartes NVIDIA (s'éteint tout seul ailleurs)", "lite": true },
+    { "slug": "better-block-entities", "why": "Coffres, panneaux, lits… rendus comme des blocs (gros gain FPS)", "lite": true },
+    { "slug": "particle-core", "why": "Culling et rendu optimisé des particules", "lite": true },
+    { "slug": "ksyxis", "why": "Chargement des mondes plus rapide", "lite": true },
+    { "slug": "structure-layout-optimizer", "why": "Génération des structures (villages, donjons) accélérée", "lite": true },
+    { "slug": "forcecloseworldloadingscreen", "why": "Ferme l'écran de chargement du monde dès que possible", "lite": true },
+    { "slug": "rsls", "why": "Moteur de son optimisé, plus de sources sonores", "lite": true },
+    { "slug": "packet-fixer", "why": "Corrige les déconnexions et limites réseau", "lite": true },
+    { "slug": "fast-ip-ping", "why": "Liste des serveurs qui ping instantanément", "lite": true },
+    { "slug": "vmp-fabric", "why": "Suivi des entités et chargement des chunks optimisés côté serveur (solo inclus)", "lite": true },
+    { "slug": "ixeris", "why": "Entrées clavier/souris lues sur un thread dédié (moins de micro-saccades)", "lite": true },
+    { "slug": "gnetum", "why": "Répartit le rendu du HUD sur plusieurs images (minimap, Jade…)", "lite": true },
+    { "slug": "cubes-without-borders", "why": "Plein écran fenêtré sans bordure (alt-tab instantané)", "lite": true },
+    { "slug": "xaeros-minimap", "why": "Minimap", "lite": true },
+    { "slug": "xaeros-world-map", "why": "Carte du monde (touche M)", "lite": true },
+    { "slug": "xaeroplus", "why": "Fonctions extra pour les cartes Xaero", "lite": true },
+    { "slug": "jade", "why": "Infos sur le bloc ou l'entité visée", "lite": true },
+    { "slug": "appleskin", "why": "Saturation et valeur nutritive de la nourriture", "lite": true },
+    { "slug": "clientsort", "why": "Tri de l'inventaire et des coffres (clic molette)", "lite": true },
+    { "slug": "mouse-tweaks", "why": "Gestion de l'inventaire à la souris (glisser, molette)", "lite": true },
     { "slug": "sound-physics-remastered", "why": "Échos, réverbération et sons étouffés réalistes" },
     { "slug": "ambientsounds", "why": "Ambiances sonores selon le biome, l'heure et la météo" },
     { "slug": "presence-footsteps", "why": "Bruits de pas réalistes selon la surface" },
@@ -60,16 +93,29 @@
     { "slug": "entitytexturefeatures", "why": "Textures d'entités émissives/aléatoires (nécessaire à Fresh Animations)" },
     { "slug": "continuity", "why": "Textures connectées (contours de NewGlowingOres, Better Leaves…)" },
     { "slug": "respackopts", "why": "Options des packs (Enchantment Outlines, Fresh Food)" },
-    { "slug": "daycounter", "why": "Compteur de jours au-dessus de la barre d'objets (les coordonnées sont sous la minimap)" },
-    { "slug": "ly-graves", "why": "Une tombe garde tes objets quand tu meurs" },
-    { "slug": "default-options", "why": "Applique les réglages LUNA au premier lancement sans écraser les tiens ensuite" },
-    { "slug": "chunky", "why": "Prégénère le monde pour que Voxy affiche tout l'horizon" },
-    { "slug": "zoomify", "why": "Zoom (pratique avec une vue aussi lointaine)" },
+    { "slug": "daycounter", "why": "Compteur de jours au-dessus de la barre d'objets (les coordonnées sont sous la minimap)", "lite": true },
+    { "slug": "ly-graves", "why": "Une tombe garde tes objets quand tu meurs", "lite": true },
+    { "slug": "default-options", "why": "Applique les réglages LUNA au premier lancement sans écraser les tiens ensuite", "lite": true },
+    { "slug": "rei", "why": "Recettes et usages de chaque objet (R / U sur un objet)", "lite": true },
+    { "slug": "freecam", "why": "Caméra libre pour explorer ou préparer une capture", "lite": true },
+    { "slug": "shoulder-surfing-reloaded", "why": "Troisième personne par-dessus l'épaule", "lite": true },
+    { "slug": "simple-voice-chat", "why": "Chat vocal de proximité (le serveur doit l'avoir aussi)", "lite": true },
+    { "slug": "flashback", "why": "Enregistre et monte des vidéos cinématiques (compatible Voxy)" },
+    { "slug": "chunky", "why": "Prégénère le monde pour que Voxy affiche tout l'horizon", "lite": true },
+    { "slug": "zoomify", "why": "Zoom (pratique avec une vue aussi lointaine)", "lite": true },
     { "slug": "iris", "why": "Shaders (seuls les packs compatibles Voxy rendent les LOD)" },
-    { "slug": "modmenu", "why": "Liste et configuration des mods" }
+    { "slug": "modmenu", "why": "Liste et configuration des mods", "lite": true }
   ],
   "localMods": [
-    { "path": "../sona-minecraft/build/libs/sona-minecraft-1.3.0.jar", "name": "Sona pour Minecraft", "why": "Lecteur Sona en jeu (titre en cours, contrôles, /sona)" }
+    {
+      "name": "Sona pour Minecraft",
+      "why": "Lecteur Sona en jeu (titre en cours, contrôles, /sona)",
+      "lite": true,
+      "files": {
+        "26.2": "vendor/sona-minecraft-1.3.0.jar",
+        "26.1.2": "vendor/sona-minecraft-1.2.0.jar"
+      }
+    }
   ],
   "resourcepacks": [
     { "slug": "better-leaves", "version": "w4ReEpuG" },
@@ -94,15 +140,28 @@
     { "slug": "fresh-animations-extensions", "version": "R5ZGSF8A" }
   ],
   "shaders": [
+    { "slug": "bsl-shaders", "voxy": true },
+    { "slug": "solas-shader", "voxy": true },
     { "slug": "complementary-reimagined" },
     { "slug": "complementary-unbound" },
-    { "slug": "bsl-shaders" },
     { "slug": "bliss-shader" },
     { "slug": "makeup-ultra-fast-shaders" }
   ],
   "defaultOptions": {
     "renderDistance": "12",
     "simulationDistance": "10",
-    "darkMojangStudiosBackground": "true"
+    "darkMojangStudiosBackground": "true",
+    "key_key.saveToolbarActivator": "key.keyboard.unknown"
+  },
+  "server": {
+    "memory": "4G",
+    "properties": {
+      "motd": "§dLUNA §7- Beyond the horizon",
+      "view-distance": 10,
+      "simulation-distance": 8,
+      "max-players": 10,
+      "sync-chunk-writes": false,
+      "enable-command-block": false
+    }
   }
 }

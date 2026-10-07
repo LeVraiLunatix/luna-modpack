@@ -1,0 +1,39 @@
+# Vérifie que le pack se construit (dépendances, conflits) quand sa config change, et chaque semaine
+# regarde quels mods existent déjà pour la prochaine version de Minecraft (Voxy en 26.3 ?).
+name: Check
+
+on:
+  push:
+    branches: [main]
+    paths: ["pack.config.json", "build.mjs", "lib/**", "luna-ui/**", "vendor/**"]
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: modrinth-${{ hashFiles('pack.config.json') }}
+          restore-keys: modrinth-
+      - run: node build.mjs --verbose
+
+  next-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Disponibilité des mods par version de Minecraft
+        run: |
+          node tools/check-versions.mjs --missing 26.3 26.2 26.1.2 | tee report.txt
+          { echo '```'; cat report.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

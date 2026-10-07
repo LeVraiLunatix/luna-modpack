@@ -1,7 +1,8 @@
 // Lance réellement le .mrpack dans une instance jetable (.test/) pour vérifier qu'il démarre :
 // installe le client vanilla + Fabric Loader, prégénère un monde avec le serveur vanilla,
 // puis ouvre ce monde en solo (compte hors ligne) et guette la connexion ou un crash.
-//   node tools/test-launch.mjs [--keep]   (--keep : laisse le jeu ouvert)
+//   node tools/test-launch.mjs [--mc 26.2] [--edition full|lite] [--keep]   (--keep : laisse le jeu ouvert)
+//   node tools/test-launch.mjs --server [--mc 26.2]   démarre le pack serveur LUNA et attend « Done »
 //   node tools/test-launch.mjs --menu     (s'arrête sur l'écran titre et le capture dans .test/screens/ ;
 //                                          la fenêtre passe au premier plan le temps de la capture)
 import { execFileSync, spawn } from "node:child_process";
@@ -12,10 +13,16 @@ import { readZip } from "../lib/zip.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const config = JSON.parse(readFileSync(join(ROOT, "pack.config.json"), "utf8"));
-const TEST = join(ROOT, ".test");
-const LIBS = join(TEST, "libraries");
-const ASSETS = join(TEST, "assets");
-const INSTANCE = join(TEST, "instance");
+const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : fallback; };
+const MC = arg("mc", Object.keys(config.targets)[0]);
+const EDITION = arg("edition", "full");
+const LOADER = config.targets[MC]?.fabricLoader;
+if (!LOADER) throw new Error(`version inconnue : ${MC}`);
+const ROOT_TEST = join(ROOT, ".test");
+const LIBS = join(ROOT_TEST, "libraries");
+const ASSETS = join(ROOT_TEST, "assets");
+const TEST = join(ROOT_TEST, MC); // une instance et un monde par version de Minecraft
+const INSTANCE = join(TEST, `instance-${EDITION}`);
 const JAVA = process.env.JAVA ?? "java";
 const WORLD = "LunaTest";
 const keep = process.argv.includes("--keep");
@@ -52,10 +59,47 @@ const mavenPath = (name) => {
 
 // ---------- Vanilla + Fabric ----------
 
-console.log(`Préparation de Minecraft ${config.minecraft} + Fabric ${config.fabricLoader}…`);
+// ---------- Mode serveur : démarre le pack serveur LUNA tel qu'un joueur le recevrait ----------
+
+if (process.argv.includes("--server")) {
+  const dir = join(TEST, "luna-server");
+  rmSync(join(dir, "mods"), { recursive: true, force: true });
+  const zip = readZip(readFileSync(join(ROOT, "dist", `${config.name}-Server-${config.version}+${MC}.zip`)));
+  for (const [name, read] of zip) {
+    if (name.endsWith("/")) continue;
+    mkdirSync(dirname(join(dir, name)), { recursive: true });
+    writeFileSync(join(dir, name), read());
+  }
+  // Instance de test locale uniquement : on accepte le CLUF et on change de port pour ne gêner personne.
+  writeFileSync(join(dir, "eula.txt"), "eula=true\n");
+  writeFileSync(join(dir, "server.properties"), readFileSync(join(dir, "server.properties"), "utf8") + "server-port=25597\nonline-mode=false\n");
+  console.log(`Démarrage du serveur LUNA ${MC}…`);
+  const srv = spawn(JAVA, ["-Xmx3G", "-jar", "fabric-server-launch.jar", "nogui"], { cwd: dir });
+  const out = [];
+  const ok = await new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(false), 8 * 60_000);
+    const onData = (d) => {
+      out.push(d.toString());
+      if (/Done \(/.test(d)) { clearTimeout(timer); srv.stdin.write("stop\n"); resolve(true); }
+    };
+    srv.stdout.on("data", onData);
+    srv.stderr.on("data", onData);
+    srv.on("exit", () => { clearTimeout(timer); resolve(false); });
+  });
+  if (ok) await new Promise((r) => srv.on("exit", r));
+  else srv.kill();
+  const log = out.join("");
+  writeFileSync(join(TEST, "server-run.log"), log);
+  const errors = log.split("\n").filter((l) => /\/ERROR\]|Exception|FATAL/.test(l));
+  for (const e of errors.slice(0, 15)) console.log(`  │ ${e}`);
+  console.log(ok ? `\n✔ Le serveur LUNA ${MC} démarre (journal : .test/${MC}/server-run.log)` : `\n✖ Le serveur n'a pas fini de démarrer (journal : .test/${MC}/server-run.log)`);
+  process.exit(ok ? 0 : 1);
+}
+
+console.log(`Préparation de Minecraft ${MC} + Fabric ${LOADER}…`);
 const manifest = await fetchJson("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json");
-const vanilla = await fetchJson(manifest.versions.find((v) => v.id === config.minecraft).url);
-const clientJar = join(TEST, "versions", `${config.minecraft}.jar`);
+const vanilla = await fetchJson(manifest.versions.find((v) => v.id === MC).url);
+const clientJar = join(ROOT_TEST, "versions", `${MC}.jar`);
 await download(vanilla.downloads.client.url, clientJar);
 
 const classpath = [];
@@ -65,7 +109,7 @@ for (const lib of vanilla.libraries) {
   await download(lib.downloads.artifact.url, dest);
   classpath.push(dest);
 }
-const fabric = await fetchJson(`https://meta.fabricmc.net/v2/versions/loader/${config.minecraft}/${config.fabricLoader}/profile/json`);
+const fabric = await fetchJson(`https://meta.fabricmc.net/v2/versions/loader/${MC}/${LOADER}/profile/json`);
 for (const lib of fabric.libraries) {
   const path = mavenPath(lib.name);
   const dest = join(LIBS, path);
@@ -91,7 +135,7 @@ for (let i = 0; i < objects.length; i += 32)
 
 // ---------- Installation du pack ----------
 
-const mrpack = readZip(readFileSync(join(ROOT, "dist", `${config.name}-${config.version}.mrpack`)));
+const mrpack = readZip(readFileSync(join(ROOT, "dist", `${config.editions[EDITION].file}-${config.version}+${MC}.mrpack`)));
 const index = JSON.parse(mrpack.get("modrinth.index.json")().toString("utf8"));
 rmSync(join(INSTANCE, "mods"), { recursive: true, force: true });
 for (const file of index.files) {
@@ -116,7 +160,7 @@ console.log(`${index.files.length} fichiers installés dans .test/instance`);
 
 // ---------- Monde de test (serveur vanilla, une seule fois) ----------
 
-const SERVER = join(TEST, "server");
+const SERVER = join(TEST, "worldgen");
 if (!existsSync(join(INSTANCE, "saves", WORLD))) {
   console.log("Génération d'un monde de test avec le serveur vanilla…");
   await download(vanilla.downloads.server.url, join(SERVER, "server.jar"));
@@ -164,7 +208,7 @@ const args = [
   fabric.mainClass,
   "--username", "LunaTest", "--uuid", "00000000000000000000000000000001",
   "--accessToken", "0", "--userType", "legacy",
-  "--version", config.minecraft, "--versionType", "release",
+  "--version", MC, "--versionType", "release",
   "--gameDir", INSTANCE, "--assetsDir", ASSETS, "--assetIndex", vanilla.assetIndex.id,
   "--width", "1600", "--height", "900",
   ...(menu ? [] : ["--quickPlaySingleplayer", WORLD]),

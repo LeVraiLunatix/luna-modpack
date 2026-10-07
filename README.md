@@ -1,12 +1,24 @@
 # LUNA
 
-Modpack Fabric pour **Minecraft 26.2** : un maximum d'optimisations, un horizon à perte de vue grâce à **Voxy**,
+Modpack Fabric pour **Minecraft 26.2 et 26.1.2** : un maximum d'optimisations, un horizon à perte de vue grâce à **Voxy**,
 de l'ambiance (sons, particules, nuages, lumières dynamiques), une sélection de packs de ressources et un thème
 **LUNA** sur tous les menus.
 
 ![Écran titre](branding/out/screenshot-title.png)
 
+Site : **https://luna-modpack.vercel.app** (sources : [LeVraiLunatix/luna-site](https://github.com/LeVraiLunatix/luna-site)).
 Le contenu exact (mods, packs, shaders, versions) est dans [MODS.md](MODS.md), régénéré à chaque build.
+
+## Éditions
+
+| Édition | Fichier | Contenu |
+|---|---|---|
+| **LUNA** | `LUNA-<ver>+<mc>.mrpack` | tout : optimisations, Voxy, ambiance, packs de ressources, shaders, thème |
+| **LUNA Lite** | `LUNA-Lite-<ver>+<mc>.mrpack` | optimisations, Voxy, cartes, Jade, REI, thème — sans packs, shaders ni mods d'ambiance |
+| **LUNA Server** | `LUNA-Server-<ver>+<mc>.zip` | serveur Fabric prêt à lancer (`start.bat` / `start.sh`) avec les mods utiles côté serveur |
+
+Chaque édition existe pour chaque version de Minecraft déclarée dans `targets` de [pack.config.json](pack.config.json).
+Les paquets sont publiés dans les [releases GitHub](https://github.com/LeVraiLunatix/luna-modpack/releases).
 
 ## Ce qu'il y a dedans
 
@@ -20,18 +32,22 @@ Le contenu exact (mods, packs, shaders, versions) est dans [MODS.md](MODS.md), r
 - **Packs de ressources** : Fresh Animations (+ extensions), Fresh Food, Better Leaves, Default Dark Mode,
   Fullbright UB… activés au premier lancement. Les moteurs qu'ils exigent sont inclus : EMF + ETF
   (Fresh Animations), Continuity (contours de NewGlowingOres), Respackopts.
-- **Shaders** (désactivés par défaut) : Complementary Reimagined et Unbound, BSL, Bliss, MakeUp Ultra Fast.
+- **Shaders** (désactivés par défaut) : BSL et Solas (qui affichent aussi le lointain de Voxy), Complementary
+  Reimagined et Unbound, Bliss, MakeUp Ultra Fast. Sodium 0.9.1 + Iris 1.11.2 sont épinglés : avec 0.9.2 + 1.11.4,
+  le terrain Voxy devenait du ciel dès qu'un shader était actif ([voxy#700](https://github.com/MCRcortex/voxy/issues/700)).
+- **Confort** : REI (recettes), Freecam, Shoulder Surfing Reloaded, Simple Voice Chat, Flashback (vidéos).
 - **Graves** : une tombe garde tes objets quand tu meurs (le mod active `keep_inventory` pour fonctionner).
-- **Sona pour Minecraft** : le lecteur Sona en jeu (mod maison, sources dans `D:\Code\sona-minecraft`).
+- **Sona pour Minecraft** : le lecteur Sona en jeu (mod maison, sources dans `D:\Code\sona-minecraft`, builds
+  livrés dans [vendor/](vendor) : 1.3.0 pour 26.2, 1.2.0 pour 26.1).
 - **Thème LUNA** : logo, sous-titre « Beyond the horizon », splashs en anglais, panorama 3D réel capturé en jeu,
   boutons, curseurs, onglets et fonds de menus.
 
 ## Installer
 
-1. Récupère `dist/LUNA-<version>.mrpack`.
+1. Récupère le `.mrpack` de ton édition et de ta version de Minecraft (releases GitHub ou Modrinth).
 2. Dans l'app Modrinth : **+ (Créer une instance) → Importer depuis un fichier** et choisis le `.mrpack`.
    Prism Launcher l'importe aussi.
-3. Donne au moins **6 Go de RAM** à l'instance.
+3. Donne au moins **6 Go de RAM** à l'instance (4 Go pour Lite).
 
 Au **premier lancement** d'une instance neuve, Default Options applique les réglages LUNA (packs de ressources
 activés dans le bon ordre, distance de rendu 12, écran de chargement sombre). Ensuite tes réglages ne sont plus
@@ -70,7 +86,7 @@ node tools/test-launch.mjs --panorama
 ```
 
 En jeu : place-toi (le regard donne la face d'ouverture de l'écran titre), cache l'interface avec F1, puis
-**Ctrl+F2**. Les faces arrivent dans `.test/instance/screenshots/` : copie-les dans `branding/panorama/` et relance
+**Ctrl+F2**. Les faces arrivent dans `.test/<mc>/instance-full/screenshots/` : copie-les dans `branding/panorama/` et relance
 le générateur. Xaero est retiré pendant cette séance (sa minimap plante pendant la capture).
 [tools/game-input.ps1](tools/game-input.ps1) permet d'envoyer des commandes au jeu depuis PowerShell
 (utiliser des coordonnées absolues : `~` est une touche morte en AZERTY).
@@ -78,23 +94,45 @@ le générateur. Xaero est retiré pendant cette séance (sa minimap plante pend
 ## Construire le pack
 
 ```bash
-node build.mjs
+node build.mjs                              # toutes les versions × éditions + serveurs
+node build.mjs --mc 26.2 --edition lite     # une seule combinaison
 ```
 
 Le script résout chaque mod, pack et shader de [pack.config.json](pack.config.json) sur Modrinth (version épinglée
-ou la plus récente pour la version de Minecraft visée), ajoute les dépendances, vérifie les hashs, contrôle les
+ou la plus récente pour la version de Minecraft visée ; épinglages par version dans `targets.<mc>.pin`), ajoute les dépendances, vérifie les hashs, contrôle les
 `depends`/`breaks` de chaque `fabric.mod.json` (jars embarqués et mods maison compris), construit le mod et le pack
-LUNA UI, écrit les réglages Default Options, puis produit `dist/LUNA-<version>.mrpack` et `MODS.md`.
+LUNA UI, écrit les réglages Default Options, puis produit les paquets dans `dist/` et `MODS.md`. Le pack serveur
+ne garde que les mods compatibles serveur dont toutes les dépendances existent côté serveur.
+
+```bash
+node tools/check-versions.mjs --missing 26.3 26.2 26.1.2
+```
+
+Liste les mods absents d'une version de Minecraft : c'est ainsi qu'on saura quand Voxy arrive en 26.3 (une vérification
+automatique tourne aussi chaque lundi sur GitHub).
+
+### Publier une version
+
+Mettre à jour `version` dans `pack.config.json`, écrire `modrinth/changelog-<version>.md`, puis :
+
+```bash
+git tag v1.3.0
+git push origin v1.3.0
+```
+
+GitHub Actions construit tous les paquets et crée la release avec le changelog. Il reste à déposer les `.mrpack` sur
+Modrinth (une version par fichier : `1.3.0+26.2`, `1.3.0+26.1.2`…).
 
 ### Tester pour de vrai
 
 ```bash
-node tools/test-launch.mjs
+node tools/test-launch.mjs [--mc 26.1.2] [--edition lite]
+node tools/test-launch.mjs --server --mc 26.2
 ```
 
-Installe le pack dans une instance jetable (`.test/`), génère un monde avec le serveur vanilla (triches activées),
+Installe le pack dans une instance jetable (`.test/<mc>/`), génère un monde avec le serveur vanilla (triches activées),
 lance le jeu en solo (compte hors ligne), vérifie qu'il charge le monde sans crash et capture l'écran.
-`--menu` s'arrête sur l'écran titre et le capture dans `.test/screens/`.
+`--menu` s'arrête sur l'écran titre et le capture dans `.test/screens/`. `--server` démarre le pack serveur jusqu'à « Done ».
 
 ## Publier sur Modrinth
 
