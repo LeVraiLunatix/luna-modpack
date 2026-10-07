@@ -1,0 +1,33 @@
+{
+  "name": "LUNA",
+  "version": "1.0.0",
+  "summary": "Fabric ultra-optimisé + rendu lointain Voxy. FPS au plafond, horizon à perte de vue.",
+  "minecraft": "26.2",
+  "fabricLoader": "0.19.5",
+  "mods": [
+    { "slug": "fabric-api", "why": "Bibliothèque de base Fabric" },
+    { "slug": "voxy", "why": "LOD : rendu de terrain à très longue distance" },
+    { "slug": "sodium", "why": "Moteur de rendu réécrit (gros gain de FPS)" },
+    { "slug": "sodium-extra", "why": "Réglages graphiques supplémentaires pour Sodium" },
+    { "slug": "reeses-sodium-options", "why": "Menu d'options Sodium plus lisible" },
+    { "slug": "lithium", "why": "Optimise la logique du jeu (IA, physique, ticks)" },
+    { "slug": "c2me-fabric", "why": "Génération/chargement des chunks multithreadé" },
+    { "slug": "scalablelux", "why": "Moteur de lumière parallélisé" },
+    { "slug": "ferrite-core", "why": "Réduit l'usage de la RAM" },
+    { "slug": "entityculling", "why": "Ne rend pas les entités cachées derrière des murs" },
+    { "slug": "moreculling", "why": "Culling supplémentaire (feuilles, blocs, cadres…)" },
+    { "slug": "immediatelyfast", "why": "Accélère le rendu immédiat (HUD, texte, entités)" },
+    { "slug": "badoptimizations", "why": "Micro-optimisations client (lightmap, ciel, etc.)" },
+    { "slug": "krypton", "why": "Optimise la pile réseau" },
+    { "slug": "alternate-current", "why": "Redstone bien plus rapide" },
+    { "slug": "clumps", "why": "Regroupe les orbes d'XP (moins de lag)" },
+    { "slug": "dynamic-fps", "why": "Baisse les FPS quand le jeu est en arrière-plan" },
+    { "slug": "lazy-language-loader", "why": "Changement de langue instantané" },
+    { "slug": "debugify", "why": "Corrige des dizaines de bugs vanilla" },
+    { "slug": "fastquit", "why": "Quitter un monde sans attendre la sauvegarde" },
+    { "slug": "chunky", "why": "Prégénère le monde pour que Voxy affiche tout l'horizon" },
+    { "slug": "zoomify", "why": "Zoom (pratique avec une vue aussi lointaine)" },
+    { "slug": "iris", "why": "Shaders (seuls les packs compatibles Voxy rendent les LOD)" },
+    { "slug": "modmenu", "why": "Liste et configuration des mods" }
+  ]
+}
