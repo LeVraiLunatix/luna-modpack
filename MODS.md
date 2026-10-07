@@ -1,10 +1,10 @@
-# Contenu de LUNA 1.3.1
+# Contenu de LUNA 1.3.2
 
 Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; les autres versions ont les mêmes mods dès qu'ils existent pour elles.
 
-**LUNA** : 82 mods, 20 packs de ressources, 6 shaders.  
-**LUNA Lite** : 64 mods (colonne Lite), sans packs de ressources ni shaders.  
-**Serveur** : 38 mods (colonne Serveur).
+**LUNA** : 88 mods, 20 packs de ressources, 6 shaders.  
+**LUNA Lite** : 70 mods (colonne Lite), sans packs de ressources ni shaders.  
+**Serveur** : 43 mods (colonne Serveur).
 
 ## Mods
 
@@ -32,6 +32,7 @@ Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; 
 | [Default Options](https://modrinth.com/mod/default-options) | 26.2.0.3+fabric-26.2 | Applique les réglages LUNA au premier lancement sans écraser les tiens ensuite | ✓ |  |
 | [Dynamic FPS](https://modrinth.com/mod/dynamic-fps) | 3.11.9 | Baisse les FPS quand le jeu est en arrière-plan | ✓ |  |
 | [[EMF] Entity Model Features](https://modrinth.com/mod/entity-model-features) | 3.3.11-fabric-26.2 | Modèles d'entités des packs (nécessaire à Fresh Animations) |  |  |
+| [Entity View Distance](https://modrinth.com/mod/entity-view-distance) | 1.9.0+26.2 | Distance d'affichage des entités réglable (bases et fermes) | ✓ | ✓ |
 | [Entity Culling](https://modrinth.com/mod/entityculling) | 1.11.2 | Ne rend pas les entités cachées derrière des murs | ✓ |  |
 | [[ETF] Entity Texture Features](https://modrinth.com/mod/entitytexturefeatures) | 7.2.5-fabric-26.2 | Textures d'entités émissives/aléatoires (nécessaire à Fresh Animations) |  |  |
 | [Essential Mod](https://modrinth.com/mod/essential) | 1.5.0.1 | Amis, invitations dans ton monde solo, captures d'écran, cosmétiques | ✓ |  |
@@ -48,6 +49,7 @@ Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; 
 | [Fzzy Config](https://modrinth.com/mod/fzzy-config) | 0.7.7+26.2 | Dépendance | ✓ | ✓ |
 | [Gnetum](https://modrinth.com/mod/gnetum) | 4.6.3+26.2-fabric | Répartit le rendu du HUD sur plusieurs images (minimap, Jade…) | ✓ |  |
 | [ImmediatelyFast](https://modrinth.com/mod/immediatelyfast) | 1.16.5+26.2-fabric | Accélère le rendu immédiat (HUD, texte, entités) | ✓ |  |
+| [Immersive Optimization](https://modrinth.com/mod/immersive-optimization) | 0.2.0+26.2 | Planifie les ticks des entités lointaines (TPS) | ✓ | ✓ |
 | [Iris Shaders](https://modrinth.com/mod/iris) | 1.11.2+26.2-fabric | Shaders (seuls les packs compatibles Voxy rendent les LOD) |  |  |
 | [Ixeris](https://modrinth.com/mod/ixeris) | 4.6.8+26.2-fabric | Entrées clavier/souris lues sur un thread dédié (moins de micro-saccades) | ✓ |  |
 | [Jade 🔍](https://modrinth.com/mod/jade) | 26.2.11+fabric | Infos sur le bloc ou l'entité visée | ✓ | ✓ |
@@ -63,14 +65,17 @@ Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; 
 | [Mod Menu](https://modrinth.com/mod/modmenu) | 20.0.3 | Liste et configuration des mods | ✓ |  |
 | [More Culling](https://modrinth.com/mod/moreculling) | 1.8.1 | Culling supplémentaire (feuilles, blocs, cadres…) | ✓ |  |
 | [Mouse Tweaks](https://modrinth.com/mod/mouse-tweaks) | 26.2-2.31-fabric | Gestion de l'inventaire à la souris (glisser, molette) | ✓ |  |
+| [NoPackCompatCheck](https://modrinth.com/mod/nopackcompatcheck) | v0.1.1-fabric-mc26.1+ | Plus d'avertissement « pack incompatible » pour les packs 1.21 | ✓ |  |
 | [Nvidium](https://modrinth.com/mod/nvidium) | 0.4.4-beta6-26.2 | Rendu ultra-rapide via mesh shaders sur cartes NVIDIA (s'éteint tout seul ailleurs) | ✓ |  |
 | [Packet Fixer](https://modrinth.com/mod/packet-fixer) | 3.3.6 | Corrige les déconnexions et limites réseau | ✓ | ✓ |
 | [Particle Core](https://modrinth.com/mod/particle-core) | 0.3.3+26.2 | Culling et rendu optimisé des particules | ✓ |  |
 | [Particle Rain](https://modrinth.com/mod/particle-rain) | v4.0.1+26.2-fabric | Pluie, neige et brouillard en particules |  |  |
 | [Text Placeholder API](https://modrinth.com/mod/placeholder-api) | 3.1.0-beta.1+26.2 | Dépendance | ✓ | ✓ |
 | [Presence Footsteps](https://modrinth.com/mod/presence-footsteps) | 1.13.3+26.2 | Bruits de pas réalistes selon la surface |  |  |
+| [quick pack](https://modrinth.com/mod/quick-pack) | fabric-1.5.1+26.2 | Chargement plus rapide des packs de ressources en zip | ✓ | ✓ |
 | [Reese's Sodium Options](https://modrinth.com/mod/reeses-sodium-options) | mc26.2-2.2.3+fabric | Menu d'options Sodium plus lisible | ✓ |  |
 | [Roughly Enough Items (REI)](https://modrinth.com/mod/rei) | 26.2.820+fabric | Recettes et usages de chaque objet (R / U sur un objet) | ✓ | ✓ |
+| [RenderScale](https://modrinth.com/mod/renderscale) | 1.4.0-alpha.4-fabric+26.2 | Calcule l'image en plus basse résolution sans toucher à l'interface (gros gain avec shaders) | ✓ |  |
 | [Resourceful Config](https://modrinth.com/mod/resourceful-config) | 5.0.0 | Dépendance | ✓ | ✓ |
 | [Respackopts](https://modrinth.com/mod/respackopts) | 26.2.2 | Options des packs (Enchantment Outlines, Fresh Food) |  | ✓ |
 | [Raise Sound Limit Simplified](https://modrinth.com/mod/rsls) | 1.3.0 | Moteur de son optimisé, plus de sources sonores | ✓ |  |
@@ -84,13 +89,14 @@ Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; 
 | [Subtle Effects](https://modrinth.com/mod/subtle-effects) | 1.15.0 | Plein de petits détails d'ambiance (particules, sons) |  | ✓ |
 | [Very Many Players (Fabric)](https://modrinth.com/mod/vmp-fabric) | 0.2.0+beta.7.236+26.2 | Suivi des entités et chargement des chunks optimisés côté serveur (solo inclus) | ✓ | ✓ |
 | [voxy](https://modrinth.com/mod/voxy) | 0.2.19-beta | LOD : rendu de terrain à très longue distance | ✓ |  |
+| [Voxy WorldGen](https://modrinth.com/mod/voxy-worldgen) | 2.4.3 | Génère les chunks en arrière-plan pour Voxy (horizon sans Chunky) | ✓ | ✓ |
 | [Wakes](https://modrinth.com/mod/wakes) | 0.7.1+26.2 | Sillages et éclaboussures sur l'eau |  |  |
 | [XaeroPlus](https://modrinth.com/mod/xaeroplus) | 2.36.5+fabric-26.2 | Fonctions extra pour les cartes Xaero | ✓ |  |
 | [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap) | fabric-26.2-26.6.0 | Minimap | ✓ | ✓ |
 | [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map) | fabric-26.2-1.47.0 | Carte du monde (touche M) | ✓ | ✓ |
 | [YetAnotherConfigLib (YACL)](https://modrinth.com/mod/yacl) | 3.9.7+26.2-fabric | Dépendance | ✓ | ✓ |
 | [Zoomify (Zoom)](https://modrinth.com/mod/zoomify) | 2.16.3+26.2 | Zoom (pratique avec une vue aussi lointaine) | ✓ |  |
-| LUNA UI (maison) | 1.3.1 | Thème visuel : logo, panorama, boutons et menus | ✓ |  |
+| LUNA UI (maison) | 1.3.2 | Thème visuel : logo, panorama, boutons et menus | ✓ |  |
 | Sona pour Minecraft (maison) | sona-minecraft-1.3.0.jar | Lecteur Sona en jeu (titre en cours, contrôles, /sona) | ✓ |  |
 
 ## Packs de ressources

@@ -320,6 +320,9 @@ async function buildServer(mc, fullBuild) {
   const problems = [], warnings = [];
   // Mods utiles côté serveur : déclarés compatibles serveur sur Modrinth ET pas « client » dans leur fabric.mod.json.
   let candidates = fullBuild.chosen.filter(({ project }) => project.server_side !== "unsupported" && fullBuild.scan.environments.get(project.slug) !== "client");
+  // Mods réservés au serveur (absents des packs joueurs), ajoutés seulement ici.
+  const extra = await resolveMods(mc, config.serverMods ?? [], target.pin ?? {}, problems, warnings);
+  for (const e of extra) if (!candidates.some((c) => c.project.id === e.project.id)) candidates.push(e);
   // Retire ceux dont une dépendance n'est disponible que côté client, jusqu'à stabilisation.
   for (let changed = true; changed; ) {
     changed = false;

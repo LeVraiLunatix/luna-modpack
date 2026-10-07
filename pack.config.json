@@ -1,6 +1,6 @@
 {
   "name": "LUNA",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "summary": "Fabric ultra-optimized pack with Voxy far rendering, a full LUNA theme, ambience mods and curated resource packs.",
   "targets": {
     "26.2": {
@@ -73,6 +73,12 @@
     { "slug": "vmp-fabric", "why": "Suivi des entités et chargement des chunks optimisés côté serveur (solo inclus)", "lite": true },
     { "slug": "ixeris", "why": "Entrées clavier/souris lues sur un thread dédié (moins de micro-saccades)", "lite": true },
     { "slug": "gnetum", "why": "Répartit le rendu du HUD sur plusieurs images (minimap, Jade…)", "lite": true },
+    { "slug": "renderscale", "why": "Calcule l'image en plus basse résolution sans toucher à l'interface (gros gain avec shaders)", "lite": true },
+    { "slug": "entity-view-distance", "why": "Distance d'affichage des entités réglable (bases et fermes)", "lite": true },
+    { "slug": "immersive-optimization", "why": "Planifie les ticks des entités lointaines (TPS)", "lite": true },
+    { "slug": "voxy-worldgen", "why": "Génère les chunks en arrière-plan pour Voxy (horizon sans Chunky)", "lite": true },
+    { "slug": "quick-pack", "why": "Chargement plus rapide des packs de ressources en zip", "lite": true },
+    { "slug": "nopackcompatcheck", "why": "Plus d'avertissement « pack incompatible » pour les packs 1.21", "lite": true },
     { "slug": "cubes-without-borders", "why": "Plein écran fenêtré sans bordure (alt-tab instantané)", "lite": true },
     { "slug": "xaeros-minimap", "why": "Minimap", "lite": true },
     { "slug": "xaeros-world-map", "why": "Carte du monde (touche M)", "lite": true },
@@ -109,6 +115,9 @@
     { "slug": "zoomify", "why": "Zoom (pratique avec une vue aussi lointaine)", "lite": true },
     { "slug": "iris", "why": "Shaders (seuls les packs compatibles Voxy rendent les LOD)" },
     { "slug": "modmenu", "why": "Liste et configuration des mods", "lite": true }
+  ],
+  "serverMods": [
+    { "slug": "servercore", "why": "Optimisations dédiées au serveur (chunks, entités, tick)" }
   ],
   "localMods": [
     {
