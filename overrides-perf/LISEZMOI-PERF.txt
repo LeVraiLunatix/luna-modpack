@@ -1,0 +1,10 @@
+LUNA Perf — réglages conseillés dans le lanceur (Modrinth App : instance > Paramètres > Java)
+
+Mémoire : 4 à 6 Go suffisent (plus n'aide pas, et ralentit le ramasse-miettes).
+Arguments JVM (Java 25) :
+  -XX:+UseZGC -XX:+ZGenerational -XX:+AlwaysPreTouch -XX:+UseStringDeduplication -XX:-DontCompileHugeMethods
+  (si ZGC se comporte mal sur ta machine, remplace par : -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=50)
+
+Dans le jeu : Options > Vidéo > API graphique (Graphics API). Teste « Par défaut » (OpenGL) puis « Préférer Vulkan »,
+garde le plus rapide chez toi (F3 pour les FPS). Sans shader, Vulkan peut ou non battre OpenGL : seul ton PC tranche.
+Shaders : désactivés dans cette édition (Iris retiré). Pour des shaders, prends l'édition LUNA complète en OpenGL.

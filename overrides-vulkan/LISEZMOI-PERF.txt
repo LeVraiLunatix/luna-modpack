@@ -1,0 +1,13 @@
+LUNA Vulkan — Minecraft sur le moteur de rendu Vulkan natif (26.2+)
+
+Ce qui est différent des autres éditions :
+  - Vulkan est préféré par défaut (Options > Vidéo > API graphique). Si ton GPU ou ton pilote ne le gère pas,
+    Minecraft retombe tout seul sur OpenGL au démarrage suivant. Il faut Vulkan 1.2 et un pilote à jour.
+  - Voxy (horizon lointain), Nvidium et les shaders Iris sont absents : ils exigent OpenGL et font planter le jeu sous Vulkan.
+    Pour l'horizon lointain ou les shaders, prends LUNA ou LUNA Perf.
+
+Mesures sur un i5-10400F + RTX 5060 (1600x900, distance 12) : environ 330 FPS en Vulkan contre 113 en OpenGL.
+Ces chiffres dépendent de ta machine ; vérifie avec F3 (la ligne « Vulkan » apparaît en bas à droite).
+
+Mémoire : 4 à 6 Go suffisent. Arguments JVM conseillés (Java 25) :
+  -XX:+UseZGC -XX:+ZGenerational -XX:+AlwaysPreTouch -XX:+UseStringDeduplication -XX:-DontCompileHugeMethods
