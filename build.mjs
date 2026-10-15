@@ -372,6 +372,32 @@ async function buildEdition(mc, edition) {
   if (!problems.length) {
     mkdirSync(DIST, { recursive: true });
     writeFileSync(out, writeZip(zipFiles));
+    // .luna = le même zip que le .mrpack + luna.json (infos pour un lanceur) + icon.png. Renommé en .mrpack, il s'importe
+    // tel quel dans Modrinth ou Prism, qui ignorent les deux fichiers en plus. Format décrit dans docs/LUNA-FORMAT.md.
+    const chain = lineage(edition).map((e) => config.editions[e]);
+    const options = Object.assign({}, config.defaultOptions, ...chain.map((e) => e?.options));
+    const backend = String(options.preferredGraphicsBackend ?? "opengl").replaceAll('"', "");
+    const jvm = Object.assign({}, ...chain.map((e) => e?.jvm));
+    const manifest = {
+      formatVersion: 1,
+      id: meta.file.toLowerCase(),
+      name: meta.name,
+      version: config.version,
+      summary: meta.summary,
+      edition,
+      minecraft: mc,
+      loader: { id: "fabric", version: target.fabricLoader },
+      java: { major: Number(JAVA_VERSION), memory: jvm.memory ?? { min: "2G", max: "6G" }, args: jvm.args ?? [] },
+      graphics: { preferredApi: backend, supportedApis: backend === "vulkan" ? ["vulkan", "opengl"] : ["opengl"] },
+      icon: "icon.png",
+      index: "modrinth.index.json",
+    };
+    const icon = existsSync(join(ROOT, "branding", "out", "icon.png")) ? readFileSync(join(ROOT, "branding", "out", "icon.png")) : readFileSync(join(UI, "assets", "luna_ui", "icon.png"));
+    writeFileSync(out.replace(/\.mrpack$/, ".luna"), writeZip([
+      { name: "luna.json", data: Buffer.from(JSON.stringify(manifest, null, 2)) },
+      { name: "icon.png", data: icon },
+      ...zipFiles,
+    ]));
   }
   return { mc, edition, chosen, localMods, resourcepacks, shaders, scan, out, problems, warnings };
 }

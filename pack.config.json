@@ -55,16 +55,19 @@
     "full": {
       "name": "LUNA",
       "file": "LUNA",
+      "jvm": { "memory": { "min": "2G", "max": "6G" } },
       "summary": "Fabric ultra-optimized pack with Voxy far rendering, a full LUNA theme, ambience mods and curated resource packs."
     },
     "lite": {
       "name": "LUNA Lite",
       "file": "LUNA-Lite",
+      "jvm": { "memory": { "min": "1G", "max": "4G" } },
       "summary": "Lightweight LUNA: every performance mod, Voxy, maps and the LUNA theme, without resource packs, shaders or ambience mods."
     },
     "perf": {
       "name": "LUNA Perf",
       "file": "LUNA-Perf",
+      "jvm": { "memory": { "min": "2G", "max": "6G" }, "args": ["-XX:+UseZGC", "-XX:+ZGenerational", "-XX:+AlwaysPreTouch", "-XX:+UseStringDeduplication", "-XX:-DontCompileHugeMethods"] },
       "summary": "LUNA Perf : le pack Fabric le plus rapide possible. Toutes les optimisations, Voxy pour l'horizon, zéro gadget gourmand, réglages vidéo calibrés pour les FPS.",
       "inherit": "lite",
       "exclude": ["xaeroplus", "essential", "simple-voice-chat", "ji-afk-cinematic", "cinematic-respawn", "rei", "freecam", "shoulder-surfing-reloaded", "flashback", "daycounter", "zoomify", "clientsort", "ly-graves"],
