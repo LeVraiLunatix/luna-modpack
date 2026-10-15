@@ -15,6 +15,8 @@ Le contenu exact (mods, packs, shaders, versions) est dans [MODS.md](MODS.md), r
 |---|---|---|
 | **LUNA** | `LUNA-<ver>+<mc>.mrpack` | tout : optimisations, Voxy, ambiance, packs de ressources, shaders, thème |
 | **LUNA Lite** | `LUNA-Lite-<ver>+<mc>.mrpack` | optimisations, Voxy, cartes, Jade, REI, thème — sans packs, shaders ni mods d'ambiance |
+| **LUNA Perf** | `LUNA-Perf-<ver>+<mc>.mrpack` | FPS d'abord : base Lite + particules/PNJ/génération allégées, sans gadgets (voice chat, cinématiques, Essential, REI…), sans shaders. Vidéo calibrée (distance 10, simulation 6, FPS illimités, AO coupée). Flags JVM et test Vulkan dans `LISEZMOI-PERF.txt` |
+| **LUNA Vulkan** | `LUNA-Vulkan-<ver>+<mc>.mrpack` | LUNA Perf sur le moteur Vulkan natif (26.2+), préféré par défaut. Sans Voxy, Nvidium ni shaders (OpenGL uniquement). ~330 FPS mesurés contre ~113 en OpenGL (i5-10400F + RTX 5060, 1600×900) |
 | **LUNA Server** | `LUNA-Server-<ver>+<mc>.zip` | serveur Fabric prêt à lancer (`start.bat` / `start.sh`) avec les mods utiles côté serveur |
 
 Chaque édition existe pour chaque version de Minecraft déclarée dans `targets` de [pack.config.json](pack.config.json).

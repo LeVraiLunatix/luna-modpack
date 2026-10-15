@@ -14,6 +14,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { basename, join, relative, sep } from "node:path";
+import { inflateRawSync } from "node:zlib";
 import { compareVersions, parseVersion, satisfies } from "./lib/semver.mjs";
 import { readZip, writeZip } from "./lib/zip.mjs";
 
@@ -24,7 +25,6 @@ const DIST = join(ROOT, "dist");
 const API = "https://api.modrinth.com/v2";
 const UA = { headers: { "User-Agent": "LeVraiLunatix/luna-modpack (build script)" } };
 const JAVA_VERSION = "25";
-const PACK_FORMATS = [84, 88]; // packs de ressources acceptés par LUNA UI : Minecraft 26.1 → 26.2
 const TYPE_RANK = { release: 0, beta: 1, alpha: 2 };
 
 // ---------- Ligne de commande ----------
@@ -223,18 +223,72 @@ function uiJar(mc) {
 // Le thème existe aussi en pack de ressources placé tout en haut de la liste : il passe ainsi devant
 // les packs d'interface (Default Dark Mode…) là où ils se chevauchent.
 const UI_PACK = "LUNA UI.zip";
-const uiPack = writeZip([
-  {
-    name: "pack.mcmeta",
-    data: Buffer.from(JSON.stringify({ pack: { min_format: [PACK_FORMATS[0]], max_format: [PACK_FORMATS[1]], description: `§dLUNA §7${config.version} — theme` } }, null, 2)),
-  },
-  { name: "pack.png", data: readFileSync(join(UI, "assets", "luna_ui", "icon.png")) },
-  ...uiAssets,
-]);
+function uiPack(info) {
+  // Depuis la 1.21.9, pack.mcmeta décrit les formats avec min_format/max_format ; avant, avec pack_format.
+  const formats = info.newPackFormat ? { min_format: info.packFormat, max_format: info.packFormat } : { pack_format: info.packFormat };
+  return writeZip([
+    { name: "pack.mcmeta", data: Buffer.from(JSON.stringify({ pack: { ...formats, description: `§dLUNA §7${config.version} — theme` } }, null, 2)) },
+    { name: "pack.png", data: readFileSync(join(UI, "assets", "luna_ui", "icon.png")) },
+    ...uiAssets,
+  ]);
+}
+
+// Version de données (ligne « version » d'options.txt) et format des packs de ressources d'une version de
+// Minecraft, lus dans le version.json du jar client. Grâce aux requêtes partielles (Range), on ne télécharge
+// que la fin du jar (son sommaire) et ce seul fichier, pas les ~30 Mo du jar. Résultats mis en cache.
+const VERSIONS_CACHE = join(CACHE, "minecraft-versions.json");
+async function versionInfo(mc) {
+  const cache = existsSync(VERSIONS_CACHE) ? JSON.parse(readFileSync(VERSIONS_CACHE, "utf8")) : {};
+  if (cache[mc]) return cache[mc];
+  const manifest = await (await fetch("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json", UA)).json();
+  const meta = await (await fetch(manifest.versions.find((v) => v.id === mc).url, UA)).json();
+  const { url, size } = meta.downloads.client;
+  const range = async (from, to) => Buffer.from(await (await fetch(url, { headers: { ...UA.headers, Range: `bytes=${from}-${to}` } })).arrayBuffer());
+  const tail = await range(Math.max(0, size - 65558), size - 1);
+  let e = tail.length - 22;
+  while (e >= 0 && tail.readUInt32LE(e) !== 0x06054b50) e--;
+  const cdSize = tail.readUInt32LE(e + 12), cdOffset = tail.readUInt32LE(e + 16);
+  const cd = await range(cdOffset, cdOffset + cdSize - 1);
+  let entry = null;
+  for (let p = 0; p < cd.length; ) {
+    const nameLen = cd.readUInt16LE(p + 28), extra = cd.readUInt16LE(p + 30), comment = cd.readUInt16LE(p + 32);
+    if (cd.toString("utf8", p + 46, p + 46 + nameLen) === "version.json") {
+      entry = { method: cd.readUInt16LE(p + 10), size: cd.readUInt32LE(p + 20), offset: cd.readUInt32LE(p + 42) };
+      break;
+    }
+    p += 46 + nameLen + extra + comment;
+  }
+  const local = await range(entry.offset, entry.offset + 30 + 1024 + entry.size);
+  const start = 30 + local.readUInt16LE(26) + local.readUInt16LE(28);
+  const raw = local.subarray(start, start + entry.size);
+  const json = JSON.parse((entry.method === 0 ? raw : inflateRawSync(raw)).toString("utf8"));
+  const pv = json.pack_version;
+  cache[mc] = {
+    dataVersion: json.world_version,
+    packFormat: typeof pv === "object" ? (pv.resource_major ?? pv.resource) : pv,
+    newPackFormat: typeof pv === "object" && "resource_major" in pv,
+  };
+  writeFileSync(VERSIONS_CACHE, JSON.stringify(cache, null, 2));
+  return cache[mc];
+}
 
 // ---------- Une édition pour une version ----------
 
-const inEdition = (edition) => (item) => edition === "full" || item.lite === true;
+// full = tout ; lite = éléments marqués lite ; une édition « inherit » reprend ceux d'une autre (moins « exclude »)
+// et ajoute ses propres éléments (marqués du nom de l'édition, ex. perf: true).
+// L'héritage est en chaîne (vulkan → perf → lite) : les exclusions, réglages et dossiers d'overrides s'accumulent
+// de l'ancêtre vers l'édition, la plus proche l'emportant.
+const lineage = (edition) => {
+  const chain = [];
+  for (let e = edition; e; e = config.editions[e]?.inherit) chain.unshift(e);
+  return chain;
+};
+const inEdition = (edition) => (item) => {
+  if (edition === "full") return true;
+  const chain = lineage(edition);
+  if (chain.some((e) => config.editions[e]?.exclude?.includes(item.slug))) return false;
+  return chain.some((e) => item[e] === true);
+};
 
 async function buildEdition(mc, edition) {
   const target = config.targets[mc];
@@ -288,12 +342,13 @@ async function buildEdition(mc, edition) {
     { name: `overrides/mods/luna-ui-${config.version}.jar`, data: ui },
     ...localMods.map((m) => ({ name: `overrides/mods/${m.filename}`, data: m.buf })),
   ];
-  if (full) zipFiles.push({ name: `overrides/resourcepacks/${UI_PACK}`, data: uiPack });
+  const info = await versionInfo(mc);
+  if (full) zipFiles.push({ name: `overrides/resourcepacks/${UI_PACK}`, data: uiPack(info) });
 
   // Réglages appliqués par Default Options au tout premier lancement seulement (jamais écrasés ensuite).
   // La ligne « version » est indispensable : sans elle, Minecraft prend le fichier pour un très vieux format,
   // tente de le convertir, échoue (« Failed to load options ») et repart des réglages d'usine.
-  const lines = [`version:${target.dataVersion}`, ...Object.entries(config.defaultOptions ?? {}).map(([k, v]) => `${k}:${v}`)];
+  const lines = [`version:${target.dataVersion ?? info.dataVersion}`, ...Object.entries(Object.assign({}, config.defaultOptions, ...lineage(edition).map((e) => config.editions[e]?.options))).map(([k, v]) => `${k}:${v}`)];
   if (full) {
     const enabled = ["vanilla", ...resourcepacks.filter((p) => p.entry.enabled !== false).map((p) => `file/${p.file.filename}`), `file/${UI_PACK}`];
     const incompatible = resourcepacks.filter((p) => p.entry.incompatible || !p.version.game_versions.includes(mc)).map((p) => `file/${p.file.filename}`);
@@ -304,6 +359,14 @@ async function buildEdition(mc, edition) {
   const overrides = join(ROOT, "overrides");
   if (existsSync(overrides))
     for (const f of walk(overrides)) zipFiles.push({ name: relative(ROOT, f).split(sep).join("/"), data: readFileSync(f) });
+  // Réglages propres à une édition (ex. overrides-perf/ → overrides/ du .mrpack), qui l'emportent sur les communs.
+  for (const dir of lineage(edition).map((e) => config.editions[e]?.overrides).filter((d) => d && existsSync(join(ROOT, d))))
+    for (const f of walk(join(ROOT, dir))) {
+      const name = "overrides/" + relative(join(ROOT, dir), f).split(sep).join("/");
+      const i = zipFiles.findIndex((z) => z.name === name);
+      if (i >= 0) zipFiles.splice(i, 1);
+      zipFiles.push({ name, data: readFileSync(f) });
+    }
 
   const out = join(DIST, `${meta.file}-${config.version}+${mc}.mrpack`);
   if (!problems.length) {

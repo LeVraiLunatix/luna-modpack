@@ -211,6 +211,13 @@ rmSync(join(INSTANCE, "crash-reports"), { recursive: true, force: true });
 // Le jeu réécrit options.txt à chaque fermeture : on force nos réglages à chaque lancement.
 const optionsFile = join(INSTANCE, "options.txt");
 const forced = { onboardAccessibility: "false", lang: "en_us" };
+// --bench : mesure les FPS (écran F3 lu par OCR). --api opengl|vulkan choisit le moteur de rendu,
+// --force k=v,k=v impose des réglages (ex. la même distance de rendu pour comparer deux éditions), --tag nom du run.
+const api = arg("api", null);
+const bench = process.argv.includes("--bench");
+if (api) forced.preferredGraphicsBackend = `"${api}"`;
+if (bench) Object.assign(forced, { maxFps: "260", enableVsync: "false" });
+for (const kv of (arg("force", "") || "").split(",").filter(Boolean)) { const [k, v] = kv.split("="); forced[k] = v; }
 // Premier lancement : on part des réglages LUNA livrés pour Default Options, comme chez un joueur.
 const defaults = join(INSTANCE, "config", "defaultoptions", "options.txt");
 const base = existsSync(optionsFile) ? readFileSync(optionsFile, "utf8") : existsSync(defaults) ? readFileSync(defaults, "utf8") : "";
@@ -255,6 +262,25 @@ if (result.ok && menu) {
 } else if (result.ok && panorama) {
   console.log("Monde chargé : place-toi, puis Ctrl+F2 (captures dans .test/instance/screenshots). Ferme le jeu pour finir.");
   await new Promise((r) => game.on("exit", r));
+} else if (result.ok && bench) {
+  await new Promise((r) => setTimeout(r, 60_000)); // chunks, Voxy et mods se stabilisent
+  const ps = (file, ...a) => execFileSync("powershell", ["-NoProfile", "-File", join(ROOT, "tools", file), ...a]).toString();
+  ps("game-input.ps1", "-ProcessId", String(game.pid), "-Keys", "F3");
+  const tag = `${EDITION}-${api ?? "default"}${arg("tag", "") ? "-" + arg("tag", "") : ""}`;
+  const shots = join(ROOT_TEST, "bench");
+  mkdirSync(shots, { recursive: true });
+  const samples = [];
+  for (let i = 0; i < 12; i++) {
+    await new Promise((r) => setTimeout(r, 2_000));
+    const png = join(shots, `${tag}-${i}.png`);
+    capture(png);
+    if (!existsSync(png)) continue;
+    const top = ps("ocr-text.ps1", "-Image", png, "-TopLeft");
+    const fps = top.match(/(\d{2,4})\s*fps\s*T/i)?.[1];
+    samples.push({ i, fps: fps ? +fps : null, top: top.split(/\r?\n/).slice(0, 3) });
+  }
+  writeFileSync(join(shots, `${tag}.json`), JSON.stringify({ edition: EDITION, api: api ?? "default", forced, samples }, null, 2));
+  console.log(`Benchmark ${tag} : FPS lus = ${samples.map((x) => x.fps).join(", ")}`);
 } else if (result.ok) {
   console.log("Monde chargé, le jeu tourne 45 s pour laisser Voxy et les mods travailler…");
   await new Promise((r) => setTimeout(r, 45_000));

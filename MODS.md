@@ -1,9 +1,9 @@
 # Contenu de LUNA 1.3.2
 
-Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; les autres versions ont les mêmes mods dès qu'ils existent pour elles.
+Versions de Minecraft : 26.2, 26.1.2, 26.1.1, 26.1, 1.21.11, 1.21.10, 1.21.9, 1.21.8, 1.21.7, 1.21.6. Le détail ci-dessous est celui de 26.2 ; les autres versions ont les mêmes mods dès qu'ils existent pour elles.
 
-**LUNA** : 88 mods, 20 packs de ressources, 6 shaders.  
-**LUNA Lite** : 70 mods (colonne Lite), sans packs de ressources ni shaders.  
+**LUNA** : 89 mods, 20 packs de ressources, 6 shaders.  
+**LUNA Lite** : 71 mods (colonne Lite), sans packs de ressources ni shaders.  
 **Serveur** : 43 mods (colonne Serveur).
 
 ## Mods
@@ -21,6 +21,7 @@ Versions de Minecraft : 26.2, 26.1.2. Le détail ci-dessous est celui de 26.2 ; 
 | [Better Clouds](https://modrinth.com/mod/better-clouds) | 1.14.4 | Nuages volumétriques dans le style vanilla |  |  |
 | [Concurrent Chunk Management Engine (Fabric)](https://modrinth.com/mod/c2me-fabric) | 0.4.1-beta.1.0+26.2 | Génération/chargement des chunks multithreadé | ✓ | ✓ |
 | [Chunky](https://modrinth.com/mod/chunky) | 1.5.3 | Prégénère le monde pour que Voxy affiche tout l'horizon | ✓ | ✓ |
+| [Cinematic Respawn](https://modrinth.com/mod/cinematic-respawn) | 26.2-fabric-1.4.0 | Réapparition cinématique après la mort | ✓ |  |
 | [Client Sort](https://modrinth.com/mod/clientsort) | 3.103.4+26.2 | Tri de l'inventaire et des coffres (clic molette) | ✓ | ✓ |
 | [Cloth Config API](https://modrinth.com/mod/cloth-config) | 26.2.155+fabric | Dépendance | ✓ | ✓ |
 | [Clumps](https://modrinth.com/mod/clumps) | 26.2.1 | Regroupe les orbes d'XP (moins de lag) | ✓ | ✓ |

@@ -25,6 +25,30 @@
         "subtle-effects": "1.14.3"
       },
       "dataVersion": 4790
+    },
+    "26.1.1": {
+      "fabricLoader": "0.19.5"
+    },
+    "26.1": {
+      "fabricLoader": "0.19.5"
+    },
+    "1.21.11": {
+      "fabricLoader": "0.19.5"
+    },
+    "1.21.10": {
+      "fabricLoader": "0.19.5"
+    },
+    "1.21.9": {
+      "fabricLoader": "0.19.5"
+    },
+    "1.21.8": {
+      "fabricLoader": "0.19.5"
+    },
+    "1.21.7": {
+      "fabricLoader": "0.19.5"
+    },
+    "1.21.6": {
+      "fabricLoader": "0.19.5"
     }
   },
   "editions": {
@@ -37,6 +61,24 @@
       "name": "LUNA Lite",
       "file": "LUNA-Lite",
       "summary": "Lightweight LUNA: every performance mod, Voxy, maps and the LUNA theme, without resource packs, shaders or ambience mods."
+    },
+    "perf": {
+      "name": "LUNA Perf",
+      "file": "LUNA-Perf",
+      "summary": "LUNA Perf : le pack Fabric le plus rapide possible. Toutes les optimisations, Voxy pour l'horizon, zéro gadget gourmand, réglages vidéo calibrés pour les FPS.",
+      "inherit": "lite",
+      "exclude": ["xaeroplus", "essential", "simple-voice-chat", "ji-afk-cinematic", "cinematic-respawn", "rei", "freecam", "shoulder-surfing-reloaded", "flashback", "daycounter", "zoomify", "clientsort", "ly-graves"],
+      "options": { "renderDistance": "10", "simulationDistance": "6", "graphicsMode": "0", "maxFps": "260", "enableVsync": "false", "biomeBlendRadius": "1", "entityDistanceScaling": "0.75", "particles": "2", "ao": "false", "mipmapLevels": "2", "cloudStatus": "\"off\"", "entityShadows": "false", "bobView": "false" },
+      "overrides": "overrides-perf"
+    },
+    "vulkan": {
+      "name": "LUNA Vulkan",
+      "file": "LUNA-Vulkan",
+      "summary": "LUNA Vulkan : Minecraft sur le moteur Vulkan natif, base LUNA Perf. Sans Voxy, Nvidium ni shaders (incompatibles avec Vulkan) : environ 3 fois plus de FPS mesurés qu'en OpenGL.",
+      "inherit": "perf",
+      "exclude": ["voxy", "voxy-worldgen", "nvidium", "chunky", "iris"],
+      "options": { "preferredGraphicsBackend": "\"vulkan\"" },
+      "overrides": "overrides-vulkan"
     }
   },
   "mods": [
@@ -110,11 +152,17 @@
     { "slug": "simple-voice-chat", "why": "Chat vocal de proximité (le serveur doit l'avoir aussi)", "lite": true },
     { "slug": "essential", "why": "Amis, invitations dans ton monde solo, captures d'écran, cosmétiques", "lite": true },
     { "slug": "ji-afk-cinematic", "why": "Caméra cinématique automatique quand tu es AFK", "lite": true },
+    { "slug": "cinematic-respawn", "why": "Réapparition cinématique après la mort", "lite": true },
     { "slug": "flashback", "why": "Enregistre et monte des vidéos cinématiques (compatible Voxy)" },
     { "slug": "chunky", "why": "Prégénère le monde pour que Voxy affiche tout l'horizon", "lite": true },
     { "slug": "zoomify", "why": "Zoom (pratique avec une vue aussi lointaine)", "lite": true },
     { "slug": "iris", "why": "Shaders (seuls les packs compatibles Voxy rendent les LOD)" },
-    { "slug": "modmenu", "why": "Liste et configuration des mods", "lite": true }
+    { "slug": "modmenu", "why": "Liste et configuration des mods", "lite": true },
+    { "slug": "gputape", "why": "Maths de rendu rapides et DSA OpenGL (GPUBooster)", "perf": true },
+    { "slug": "asyncparticles", "why": "Particules calculées en asynchrone, rendues par le GPU", "perf": true },
+    { "slug": "noisiumforked", "why": "Optimise la génération du monde", "perf": true },
+    { "slug": "lmd", "why": "Règles de despawn des mobs allégées (moins d'entités)", "perf": true },
+    { "slug": "fast-item-frames", "why": "Cadres d'objets beaucoup moins coûteux", "perf": true }
   ],
   "serverMods": [
     { "slug": "servercore", "why": "Optimisations dédiées au serveur (chunks, entités, tick)" }
@@ -126,7 +174,7 @@
       "lite": true,
       "files": {
         "26.2": "vendor/sona-minecraft-1.3.0.jar",
-        "26.1.2": "vendor/sona-minecraft-1.2.0.jar"
+        "26.1.2": "vendor/sona-minecraft-1.2.0.jar", "26.1.1": "vendor/sona-minecraft-1.2.0.jar", "26.1": "vendor/sona-minecraft-1.2.0.jar"
       }
     }
   ],
@@ -167,7 +215,18 @@
     "key_key.saveToolbarActivator": "key.keyboard.unknown",
     "key_key.freecam.toggle": "key.keyboard.f7",
     "key_key.mute_microphone": "key.keyboard.f8",
-    "key_key.shouldersurfing.swap_shoulder": "key.keyboard.j"
+    "key_key.shouldersurfing.swap_shoulder": "key.keyboard.j",
+    "soundCategory_master": "0.5",
+    "soundCategory_music": "0.0",
+    "soundCategory_record": "0.6",
+    "soundCategory_weather": "0.4",
+    "soundCategory_block": "0.7",
+    "soundCategory_hostile": "0.6",
+    "soundCategory_neutral": "0.3",
+    "soundCategory_player": "0.4",
+    "soundCategory_ambient": "0.2",
+    "soundCategory_voice": "0.0",
+    "soundCategory_ui": "0.5"
   },
   "server": {
     "memory": "4G",
